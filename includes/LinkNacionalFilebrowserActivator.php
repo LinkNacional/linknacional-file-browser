@@ -4,7 +4,28 @@ namespace LinkNacional\Filebrowser\Includes;
 
 class LinkNacionalFilebrowserActivator {
 
+	/**
+	 * Current schema version for the plugin tables.
+	 */
+	const DB_VERSION = '1.1.0';
+
 	public static function activate() {
+		self::create_tables();
+		\update_option( 'linknacional_filebrowser_db_version', self::DB_VERSION );
+	}
+
+	/**
+	 * Runs dbDelta when the stored schema version is behind the current one.
+	 * Hooked on `plugins_loaded` so upgrades apply without reactivation.
+	 */
+	public static function maybe_upgrade() {
+		if ( \get_option( 'linknacional_filebrowser_db_version' ) !== self::DB_VERSION ) {
+			self::create_tables();
+			\update_option( 'linknacional_filebrowser_db_version', self::DB_VERSION );
+		}
+	}
+
+	private static function create_tables() {
 		global $wpdb;
 
 		$folders_table = $wpdb->prefix . 'linknacional_filebrowser_folders';
@@ -17,10 +38,15 @@ class LinkNacionalFilebrowserActivator {
 			name varchar(255) NOT NULL,
 			parent_id mediumint(9) DEFAULT 0,
 			path text NOT NULL,
+			is_favorite tinyint(1) NOT NULL DEFAULT 0,
+			is_trashed tinyint(1) NOT NULL DEFAULT 0,
+			trashed_at datetime DEFAULT NULL,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
-			KEY parent_id (parent_id)
+			KEY parent_id (parent_id),
+			KEY is_favorite (is_favorite),
+			KEY is_trashed (is_trashed)
 		) $charset_collate;";
 
 		$sql_files = "CREATE TABLE $files_table (
@@ -33,10 +59,15 @@ class LinkNacionalFilebrowserActivator {
 			file_path text NOT NULL,
 			file_url text NOT NULL,
 			description text,
+			is_favorite tinyint(1) NOT NULL DEFAULT 0,
+			is_trashed tinyint(1) NOT NULL DEFAULT 0,
+			trashed_at datetime DEFAULT NULL,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
-			KEY folder_id (folder_id)
+			KEY folder_id (folder_id),
+			KEY is_favorite (is_favorite),
+			KEY is_trashed (is_trashed)
 		) $charset_collate;";
 
 		require_once \ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -49,7 +80,5 @@ class LinkNacionalFilebrowserActivator {
 		if ( ! \file_exists( $filebrowser_dir ) ) {
 			wp_mkdir_p( $filebrowser_dir );
 		}
-
-		\add_option( 'linknacional_filebrowser_db_version', '1.0.2' );
 	}
 }

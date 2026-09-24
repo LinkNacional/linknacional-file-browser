@@ -6,7 +6,7 @@ on:
 env:
   PLUGIN_NAME: linknacional-file-browser
   PHP_VERSION: "8.2"
-  DEPLOY_TAG: "1.0.2"
+  DEPLOY_TAG: "1.1.0"
 
 jobs:
   deploy-to-wp:

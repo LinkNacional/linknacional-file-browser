@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: linknacional-file-browser
   PHP_VERSION: "8.2"
-  PLUGIN_VERSION: '1.0.2'
+  PLUGIN_VERSION: '1.1.0'
 
 jobs:
   release-build:
@@ -38,6 +38,12 @@ jobs:
         args: --ignore-platform-reqs
         command: install
         dev: no
+
+    # Gera o body da release (metadados + resumo do changelog) — mesmo conteúdo do PR
+    - name: Generate release body
+      run: |
+        mkdir -p dist
+        bash .github/scripts/generate-release-body.sh > dist/release-body.md
 
     # Add plugin files to a root directory
     - name: Prepare plugin folder
@@ -77,6 +83,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "dist/${{ env.PLUGIN_NAME }}.zip"
+        bodyFile: "dist/release-body.md"
         token: ${{ secrets.GITHUB_TOKEN }}
         commit: "main"
         draft: true
