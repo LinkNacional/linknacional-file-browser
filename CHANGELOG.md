@@ -1,4 +1,4 @@
-# 1.1.0 - 23/09/26
+# 1.1.0 - 24/09/26
 * Redesign completo das interfaces (admin e frontend): coleções na sidebar, barra de ferramentas, painel de detalhes (drawer), toasts e visual renovado.
 * Favoritos: marque arquivos e pastas como favoritos e navegue por eles em uma coleção dedicada (admin e frontend).
 * Recentes: coleção com os arquivos adicionados mais recentemente (admin e frontend).

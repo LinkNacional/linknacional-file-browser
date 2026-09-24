@@ -97,7 +97,7 @@ Yes! The plugin is built with responsive design and automatically adapts to tabl
 
 == Changelog ==
 
-= 1.1.0 - 2026-09-23 =
+= 1.1.0 - 2026-09-24 =
 * Redesigned admin and frontend interfaces: sidebar collections, workspace toolbar, detail drawer, toasts, and a fully refreshed look.
 * Favorites: mark files and folders as favorites and browse them in a dedicated collection (admin and frontend).
 * Recent: a collection listing the most recently added files (admin and frontend).
