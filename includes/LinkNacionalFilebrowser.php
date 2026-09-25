@@ -50,6 +50,7 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_linknacional_move_file', $plugin_admin, 'move_file_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_move_folder', $plugin_admin, 'move_folder_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_toggle_favorite', $plugin_admin, 'toggle_favorite_ajax' );
+		$this->loader->add_action( 'wp_ajax_linknacional_toggle_download', $plugin_admin, 'toggle_download_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_trash_items', $plugin_admin, 'trash_items_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_restore_items', $plugin_admin, 'restore_items_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_purge_items', $plugin_admin, 'purge_items_ajax' );
@@ -81,6 +82,10 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_frontend_get_folder_files', $plugin_public, 'get_folder_files_frontend' );
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
+
+		// File delivery endpoint — enforces the per-file download restriction for visitors.
+		$this->loader->add_action( 'wp_ajax_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
+		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
 
 		// Prevent LiteSpeed Cache from combining/minifying FontAwesome bundle
 		$this->loader->add_filter( 'script_loader_tag', $this, 'add_no_optimize_attr', 10, 3 );

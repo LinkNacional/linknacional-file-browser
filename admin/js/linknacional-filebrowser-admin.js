@@ -229,6 +229,7 @@
 			actions.push({ label: t('copy_to', 'Copy to…'), icon: 'fas fa-copy', run: function () { openMoveModal(item, 'copy'); } });
 			actions.push({ label: t('edit_name', 'Rename'), icon: 'fas fa-pen', run: function () { openRename(item); } });
 			actions.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
+			actions.push({ label: item.allow_download ? t('restrict_download', 'Restrict download') : t('allow_download', 'Allow download'), icon: item.allow_download ? 'fas fa-lock' : 'fas fa-lock-open', run: function () { toggleDownload(item); } });
 			actions.push({ label: t('move_to_trash', 'Move to trash'), icon: 'fas fa-trash', danger: true, run: function () { trashItems([item]); } });
 		}
 		return actions;
@@ -368,7 +369,7 @@
 		});
 		files.forEach(function (f) {
 			var ext = extOf(f.original_name);
-			html += '<div class="lkn-fb-tree-item file" data-file-id="' + f.id + '" data-file-name="' + esc(f.original_name) + '" data-file-url="' + esc(f.file_url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(f.file_size) || 0) + '" data-parent-folder-id="' + parentId + '" draggable="false">'
+			html += '<div class="lkn-fb-tree-item file" data-file-id="' + f.id + '" data-file-name="' + esc(f.original_name) + '" data-file-url="' + esc(f.file_url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(f.file_size) || 0) + '" data-allow-download="' + (Number(f.allow_download) === 0 ? 0 : 1) + '" data-parent-folder-id="' + parentId + '" draggable="false">'
 				+ '<span class="lkn-fb-tree-spacer"></span>'
 				+ '<span class="lkn-fb-tree-icn"><i class="' + typeIcon(ext) + '"></i></span>'
 				+ '<span class="lkn-fb-tree-label">' + esc(f.original_name) + '</span>'
@@ -462,6 +463,7 @@
 				filetype: f.file_type || extOf(f.original_name), size: f.file_size,
 				created_at: f.created_at, updated_at: f.updated_at, _name: f.original_name,
 				is_favorite: Number(f.is_favorite) || 0,
+				allow_download: Number(f.allow_download) === 0 ? 0 : 1,
 				folder_id: f.folder_id, folder_name: f.folder_name || ''
 			});
 		});
@@ -519,10 +521,11 @@
 	function cardHtml(item) {
 		var isFolder = item.type === 'folder';
 		var ext = isFolder ? '' : (item.filetype || '');
+		var locked = !isFolder && Number(item.allow_download) === 0;
 		var thumb;
 		if (isFolder) {
 			thumb = '<i class="fas fa-folder"></i>';
-		} else if (IMG_EXT.indexOf(ext) !== -1) {
+		} else if (!locked && IMG_EXT.indexOf(ext) !== -1) {
 			thumb = '<img src="' + esc(item.url) + '" alt="" draggable="false" loading="lazy">';
 		} else {
 			thumb = '<i class="' + typeIcon(ext) + '"></i>';
@@ -536,18 +539,22 @@
 		}
 		var data = 'data-type="' + item.type + '" data-id="' + item.id + '" data-name="' + esc(item.name) + '"'
 			+ ' data-favorite="' + (item.is_favorite ? 1 : 0) + '"'
+			+ ' data-allow-download="' + (locked ? 0 : 1) + '"'
 			+ ' data-created="' + esc(item.created_at || '') + '" data-updated="' + esc(item.updated_at || '') + '"';
 		if (!isFolder) {
 			data += ' data-url="' + esc(item.url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(item.size) || 0) + '"'
 				+ ' data-folder-id="' + (Number(item.folder_id) || 0) + '" data-folder-name="' + esc(item.folder_name || '') + '"';
 		}
+		var fav = favStarButtonHtml(item);
+		var lock = locked ? '<span class="lkn-fb-lock-badge" title="' + esc(t('download_locked', 'Download restricted')) + '"><i class="fas fa-lock"></i></span>' : '';
 		return '<div class="lkn-fb-item ' + item.type + (ext ? ' ext-' + esc(ext) : '') + '" ' + data + ' draggable="true">'
-			+ favStarButtonHtml(item)
+			+ fav
 			+ '<label class="lkn-fb-check"><input type="checkbox" class="lkn-fb-select" aria-label="Select"><span></span></label>'
 			+ '<button type="button" class="lkn-fb-kebab" aria-label="' + esc(t('more_actions', 'More actions')) + '"><i class="fas fa-ellipsis-vertical"></i></button>'
 			+ '<div class="lkn-fb-thumb">' + thumb + '</div>'
 			+ '<div class="lkn-fb-name" title="' + esc(item.name) + '">' + esc(item.name) + '</div>'
 			+ '<div class="lkn-fb-meta">' + esc(meta) + '</div>'
+			+ lock
 			+ '</div>';
 	}
 
@@ -568,6 +575,7 @@
 		base.url = String($el.attr('data-url'));
 		base.filetype = String($el.attr('data-filetype'));
 		base.size = Number($el.attr('data-size'));
+		base.allow_download = Number($el.attr('data-allow-download')) === 0 ? 0 : 1;
 		base.folder_id = Number($el.attr('data-folder-id')) || 0;
 		base.folder_name = String($el.attr('data-folder-name') || '');
 		return base;
@@ -921,7 +929,7 @@
 
 	function downloadFile(item) {
 		var a = document.createElement('a');
-		a.href = item.url;
+		a.href = item.url + (item.url.indexOf('?') === -1 ? '?' : '&') + 'dl=1';
 		a.download = item.name;
 		document.body.appendChild(a);
 		a.click();
@@ -1283,6 +1291,22 @@
 		});
 	}
 
+	function toggleDownload(item) {
+		api('linknacional_toggle_download', { id: item.id }).then(function (response) {
+			if (response && response.success) {
+				toast(response.data.message, 'success');
+				var allow = response.data.allow_download ? 1 : 0;
+				if (state.drawerItem && state.drawerItem.id === item.id) { state.drawerItem.allow_download = allow; }
+				state.contents.files.forEach(function (it) { if (Number(it.id) === Number(item.id)) { it.allow_download = allow; } });
+				renderContents();
+				renderTree();
+				if (state.drawerItem && state.drawerItem.id === item.id) { openDrawer(state.drawerItem); }
+			} else {
+				toast((response && response.data) || t('error_generic', 'Something went wrong. Please try again.'), 'error');
+			}
+		});
+	}
+
 	function toggleFavorite(item) {
 		api('linknacional_toggle_favorite', { item_type: item.type, id: item.id }).then(function (response) {
 			if (response && response.success) {
@@ -1463,6 +1487,7 @@
 				url: String($(this).attr('data-file-url')),
 				filetype: String($(this).attr('data-filetype')),
 				size: Number($(this).attr('data-size')) || 0,
+				allow_download: Number($(this).attr('data-allow-download')) === 0 ? 0 : 1,
 				folder_id: Number($(this).attr('data-parent-folder-id')) || 0
 			});
 		});

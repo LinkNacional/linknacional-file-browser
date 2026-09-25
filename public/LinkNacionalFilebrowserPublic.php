@@ -5,6 +5,8 @@
 
 namespace LinkNacional\Filebrowser\Public;
 
+use LinkNacional\Filebrowser\Includes\LinkNacionalFilebrowserFiles;
+
 class LinkNacionalFilebrowserPublic {
 
 	private $plugin_name;
@@ -27,6 +29,50 @@ class LinkNacionalFilebrowserPublic {
 		}
 		$nonce = wp_create_nonce( $action_name );
 		wp_send_json_success( array( 'nonce' => $nonce ) );
+	}
+
+	/**
+	 * Stream a stored file through PHP, enforcing the per-file download flag.
+	 */
+	public function serve_file_ajax() {
+		check_ajax_referer( LinkNacionalFilebrowserFiles::NONCE_ACTION, 'nonce' );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$file_id  = isset( $_GET['file_id'] ) ? intval( wp_unslash( $_GET['file_id'] ) ) : 0;
+		$download = isset( $_GET['dl'] );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
+
+		if ( ! $file || (int) $file->is_trashed === 1 ) {
+			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
+		}
+
+		// Restricted files stay reachable for managers; visitors are blocked.
+		if ( empty( $file->allow_download ) && ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Download restricted', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
+		}
+
+		$path = $file->file_path;
+		if ( ! $path || ! file_exists( $path ) || ! LinkNacionalFilebrowserFiles::is_within_upload_dir( $path ) ) {
+			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
+		}
+
+		$type = wp_check_filetype( $file->original_name );
+		$mime = ! empty( $type['type'] ) ? $type['type'] : 'application/octet-stream';
+
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+		nocache_headers();
+		header( 'Content-Type: ' . $mime );
+		header( 'Content-Length: ' . filesize( $path ) );
+		header( 'Content-Disposition: ' . ( $download ? 'attachment' : 'inline' ) . '; filename="' . rawurlencode( $file->original_name ) . '"' );
+		header( 'X-Content-Type-Options: nosniff' );
+		readfile( $path );
+		exit;
 	}
 
 	public function register_shortcode() {
@@ -56,6 +102,7 @@ class LinkNacionalFilebrowserPublic {
 			'open_file'           => esc_html__( 'Open', 'linknacional-file-browser' ),
 			'open_new_tab'        => esc_html__( 'Open in new tab', 'linknacional-file-browser' ),
 			'download'            => esc_html__( 'Download', 'linknacional-file-browser' ),
+			'download_locked'      => esc_html__( 'Download restricted', 'linknacional-file-browser' ),
 			'preview'             => esc_html__( 'Preview', 'linknacional-file-browser' ),
 			'copy_link'           => esc_html__( 'Copy link', 'linknacional-file-browser' ),
 			'more_actions'        => esc_html__( 'More actions', 'linknacional-file-browser' ),
@@ -215,7 +262,7 @@ class LinkNacionalFilebrowserPublic {
 		if ( $root_id > 0 || ! empty( $exclude_ids ) ) {
 			list( $folders, $files ) = $this->scope_items( $folders, $files, $root_id, $exclude_ids );
 		}
-		wp_send_json_success( array( 'folders' => $folders, 'files' => $files ) );
+		wp_send_json_success( array( 'folders' => $folders, 'files' => LinkNacionalFilebrowserFiles::prepare_rows( $files ) ) );
 	}
 
 	/**
@@ -244,6 +291,7 @@ class LinkNacionalFilebrowserPublic {
 			list( $folders, $files ) = $this->scope_items( $folders, $files, $root_id, $exclude_ids );
 		}
 		$folders = $this->attach_folder_item_counts( $folders );
+		$files   = LinkNacionalFilebrowserFiles::prepare_rows( $files );
 		wp_send_json_success( array( 'folders' => $folders, 'files' => $files ) );
 	}
 
@@ -343,6 +391,7 @@ class LinkNacionalFilebrowserPublic {
 			list( $folders, $files ) = $this->scope_items( $folders, $files, $root_id, $exclude_ids );
 		}
 		$folders = $this->attach_folder_item_counts( $folders );
+		$files   = LinkNacionalFilebrowserFiles::prepare_rows( $files );
 		wp_send_json_success( array( 'folders' => $folders, 'files' => $files, 'search_term' => $search_term ) );
 	}
 
@@ -514,7 +563,7 @@ class LinkNacionalFilebrowserPublic {
 			$current_folder = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$this->table_folders()} WHERE id = %d", $folder_id));
 		}
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array('folders' => $this->attach_folder_item_counts( $folders ), 'files' => $files, 'current_folder' => $current_folder, 'breadcrumb' => $this->build_breadcrumb( $folder_id ));
+		return array('folders' => $this->attach_folder_item_counts( $folders ), 'files' => LinkNacionalFilebrowserFiles::prepare_rows( $files ), 'current_folder' => $current_folder, 'breadcrumb' => $this->build_breadcrumb( $folder_id ));
 	}
 
 	private function build_breadcrumb( $folder_id ) {
@@ -567,7 +616,7 @@ class LinkNacionalFilebrowserPublic {
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$files = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE folder_id = %d AND is_trashed = 0 ORDER BY original_name ASC", $folder_id));
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		wp_send_json_success( $files );
+		wp_send_json_success( LinkNacionalFilebrowserFiles::prepare_rows( $files ) );
 	}
 
 	private function table_folders() {

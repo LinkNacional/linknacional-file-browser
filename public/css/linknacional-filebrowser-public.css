@@ -826,6 +826,32 @@
 	box-shadow: none;
 }
 
+/* Lock badge: marks a file whose download is restricted for visitors. */
+.linknacional-filebrowser-public .lnfb-lock-badge {
+	position: absolute;
+	left: 8px;
+	bottom: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, .92);
+	color: var(--lnfb-primary);
+	font-size: 12px;
+	line-height: 1;
+	box-shadow: var(--lnfb-shadow);
+	z-index: 3;
+	pointer-events: none;
+}
+.linknacional-filebrowser-public .lnfb-contents.is-list .lnfb-item .lnfb-lock-badge {
+	position: static;
+	order: 1;
+	background: transparent;
+	box-shadow: none;
+}
+
 /* ------------------------------------------------------------------ *
  * Detail panel — overlays the content area (absolute) so the grid is not squeezed.
  * ------------------------------------------------------------------ */

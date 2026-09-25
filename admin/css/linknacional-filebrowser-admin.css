@@ -1378,6 +1378,27 @@
 .lkn-fb-item .lkn-fb-fav-btn.is-fav { opacity: 1; }
 .lkn-fb-contents.is-list .lkn-fb-item .lkn-fb-fav-btn { position: static; order: 1; background: transparent; box-shadow: none; }
 
+/* Lock badge: marks a file whose download is restricted for visitors. */
+.lkn-fb-lock-badge {
+	position: absolute;
+	left: 8px;
+	bottom: 8px;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, .92);
+	color: var(--lkn-fb-primary);
+	font-size: 12px;
+	line-height: 1;
+	box-shadow: var(--lkn-fb-shadow);
+	pointer-events: none;
+}
+.lkn-fb-contents.is-list .lkn-fb-item .lkn-fb-lock-badge { position: static; order: 1; background: transparent; box-shadow: none; }
+
 /* --------------------- Detail panel (overlays content area) ------- */
 .lkn-fb-drawer {
 	position: absolute;

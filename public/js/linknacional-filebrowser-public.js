@@ -172,12 +172,15 @@
 				{ label: t('open_file', 'Open'), icon: 'fas fa-folder-open', run: function () { navigateTo(item.id); } }
 			];
 		}
-		return [
-			{ label: t('preview', 'Preview'), icon: 'fas fa-eye', run: function () { openDrawer(item); } },
-			{ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } },
-			{ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } },
-			{ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } }
+		var actions = [
+			{ label: t('preview', 'Preview'), icon: 'fas fa-eye', run: function () { openDrawer(item); } }
 		];
+		if (item.allow_download) {
+			actions.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
+			actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
+			actions.push({ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } });
+		}
+		return actions;
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -233,7 +236,7 @@
 		$('#lnfb-drawer-meta').text(meta.join(' - '));
 
 		var $p = $('#lnfb-drawer-preview').empty();
-		var isImg = IMG_EXT.indexOf(ext) !== -1 && item.url;
+		var isImg = IMG_EXT.indexOf(ext) !== -1 && item.url && item.allow_download;
 		$p.toggleClass('is-image', isImg);
 		if (isImg) {
 			$p.append($('<img>').attr('src', item.url).attr('alt', item.name));
@@ -260,12 +263,13 @@
 		});
 		$('#lnfb-drawer-details').html(details);
 
-		// Public is read-only: quick actions only.
-		var quick = [
-			{ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } },
-			{ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } },
-			{ label: t('copy_url', 'Copy URL'), icon: 'fas fa-link', run: function () { copyLink(item); } }
-		];
+		// Public is read-only: quick actions only, hidden when download is restricted.
+		var quick = [];
+		if (item.allow_download) {
+			quick.push({ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } });
+			quick.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
+			quick.push({ label: t('copy_url', 'Copy URL'), icon: 'fas fa-link', run: function () { copyLink(item); } });
+		}
 		var $q = $('#lnfb-drawer-quick').empty();
 		quick.forEach(function (a) {
 			$('<button type="button" class="lnfb-quick-item">')
@@ -307,7 +311,7 @@
 
 	function downloadFile(item) {
 		var a = document.createElement('a');
-		a.href = item.url;
+		a.href = item.url + (item.url.indexOf('?') === -1 ? '?' : '&') + 'dl=1';
 		a.download = item.name;
 		document.body.appendChild(a);
 		a.click();
@@ -477,7 +481,7 @@
 		});
 		files.forEach(function (f) {
 			var ext = extOf(f.original_name);
-			html += '<div class="lnfb-tree-item file" data-file-id="' + f.id + '" data-file-name="' + esc(f.original_name) + '" data-file-url="' + esc(f.file_url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(f.file_size) || 0) + '" data-parent-folder-id="' + parentId + '">'
+			html += '<div class="lnfb-tree-item file" data-file-id="' + f.id + '" data-file-name="' + esc(f.original_name) + '" data-file-url="' + esc(f.file_url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(f.file_size) || 0) + '" data-allow-download="' + (Number(f.allow_download) === 0 ? 0 : 1) + '" data-parent-folder-id="' + parentId + '">'
 				+ '<span class="lnfb-tree-spacer"></span>'
 				+ '<span class="lnfb-tree-icn"><i class="' + typeIcon(ext) + '"></i></span>'
 				+ '<span class="lnfb-tree-label">' + esc(f.original_name) + '</span>'
@@ -598,6 +602,7 @@
 				type: 'file', id: f.id, name: f.original_name, url: f.file_url,
 				filetype: f.file_type || extOf(f.original_name), size: f.file_size,
 				is_favorite: Number(f.is_favorite) || 0, created_at: f.created_at, updated_at: f.updated_at,
+				allow_download: Number(f.allow_download) === 0 ? 0 : 1,
 				folder_id: f.folder_id, folder_name: f.folder_name || ''
 			});
 		});
@@ -635,7 +640,7 @@
 			html += cardHtml({ type: 'folder', id: f.id, name: f.name, path: f.full_path || '', is_favorite: Number(f.is_favorite) || 0, item_count: Number(f.item_count) || 0, updated_at: f.updated_at });
 		});
 		files.forEach(function (f) {
-			html += cardHtml({ type: 'file', id: f.id, name: f.original_name, url: f.file_url, filetype: f.file_type || extOf(f.original_name), size: f.file_size, path: f.folder_name || '', is_favorite: Number(f.is_favorite) || 0, updated_at: f.updated_at, folder_id: f.folder_id, folder_name: f.folder_name || '' });
+			html += cardHtml({ type: 'file', id: f.id, name: f.original_name, url: f.file_url, filetype: f.file_type || extOf(f.original_name), size: f.file_size, path: f.folder_name || '', is_favorite: Number(f.is_favorite) || 0, allow_download: Number(f.allow_download) === 0 ? 0 : 1, updated_at: f.updated_at, folder_id: f.folder_id, folder_name: f.folder_name || '' });
 		});
 		$c.html(html);
 	}
@@ -643,10 +648,11 @@
 	function cardHtml(item) {
 		var isFolder = item.type === 'folder';
 		var ext = isFolder ? '' : (item.filetype || '');
+		var locked = !isFolder && item.allow_download === 0;
 		var thumb;
 		if (isFolder) {
 			thumb = '<i class="fas fa-folder"></i>';
-		} else if (IMG_EXT.indexOf(ext) !== -1 && item.url) {
+		} else if (!locked && IMG_EXT.indexOf(ext) !== -1 && item.url) {
 			thumb = '<img src="' + esc(item.url) + '" alt="" draggable="false" loading="lazy">';
 		} else {
 			thumb = '<i class="' + typeIcon(ext) + '"></i>';
@@ -661,14 +667,17 @@
 		if (item.path) { meta = esc(item.path); }
 		var data = 'data-type="' + item.type + '" data-id="' + item.id + '" data-name="' + esc(item.name) + '"'
 			+ ' data-favorite="' + (item.is_favorite ? 1 : 0) + '"'
+			+ ' data-allow-download="' + (locked ? 0 : 1) + '"'
 			+ ' data-created="' + esc(item.created_at || '') + '" data-updated="' + esc(item.updated_at || '') + '"';
 		if (!isFolder) {
 			data += ' data-url="' + esc(item.url) + '" data-filetype="' + esc(ext) + '" data-size="' + (Number(item.size) || 0) + '"'
 				+ ' data-folder-id="' + (Number(item.folder_id) || 0) + '" data-folder-name="' + esc(item.folder_name || '') + '"';
 		}
 		var star = Number(item.is_favorite) ? '<span class="lnfb-fav-badge" title="' + esc(t('col_favorites', 'Favorites')) + '"><i class="fas fa-star"></i></span>' : '';
+		var lock = locked ? '<span class="lnfb-lock-badge" title="' + esc(t('download_locked', 'Download restricted')) + '"><i class="fas fa-lock"></i></span>' : '';
 		return '<div class="lnfb-item ' + item.type + (ext ? ' ext-' + esc(ext) : '') + '" ' + data + '>'
 			+ star
+			+ lock
 			+ '<button type="button" class="lnfb-kebab" aria-label="' + esc(t('more_actions', 'More actions')) + '"><i class="fas fa-ellipsis-vertical"></i></button>'
 			+ '<div class="lnfb-thumb">' + thumb + '</div>'
 			+ '<div class="lnfb-name" title="' + esc(item.name) + '">' + esc(item.name) + '</div>'
@@ -692,6 +701,7 @@
 		base.url = String($el.attr('data-url'));
 		base.filetype = String($el.attr('data-filetype'));
 		base.size = Number($el.attr('data-size'));
+		base.allow_download = Number($el.attr('data-allow-download')) === 0 ? 0 : 1;
 		base.folder_id = Number($el.attr('data-folder-id')) || 0;
 		base.folder_name = String($el.attr('data-folder-name') || '');
 		return base;
@@ -804,7 +814,8 @@
 				name: String($(this).attr('data-file-name')),
 				url: String($(this).attr('data-file-url')),
 				filetype: String($(this).attr('data-filetype')),
-				size: Number($(this).attr('data-size')) || 0
+				size: Number($(this).attr('data-size')) || 0,
+				allow_download: Number($(this).attr('data-allow-download')) === 0 ? 0 : 1
 			});
 		});
 		$(document).on('click', '.linknacional-filebrowser-public .lnfb-tree-toggle', function (e) {

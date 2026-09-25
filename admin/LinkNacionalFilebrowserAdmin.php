@@ -5,6 +5,8 @@
 
 namespace LinkNacional\Filebrowser\Admin;
 
+use LinkNacional\Filebrowser\Includes\LinkNacionalFilebrowserFiles;
+
 class LinkNacionalFilebrowserAdmin {
 
 	private $plugin_name;
@@ -152,6 +154,10 @@ class LinkNacionalFilebrowserAdmin {
 			'ai_title'          => esc_html__( 'File Browser', 'linknacional-file-browser' ),
 			'ai_url'            => esc_html__( 'URL', 'linknacional-file-browser' ),
 			'ai_description'    => esc_html__( 'Description', 'linknacional-file-browser' ),
+			'restrict_download' => esc_html__( 'Restrict download', 'linknacional-file-browser' ),
+			'allow_download'    => esc_html__( 'Allow download', 'linknacional-file-browser' ),
+			'download_locked'   => esc_html__( 'Download restricted', 'linknacional-file-browser' ),
+			'download_unlocked' => esc_html__( 'Download allowed', 'linknacional-file-browser' ),
 		));
 	}
 
@@ -341,10 +347,18 @@ class LinkNacionalFilebrowserAdmin {
 				continue;
 			}
 
-			$filename  = basename( $movefile['file'] );
-			$file_path = $movefile['file'];
-			$file_url  = $movefile['url'];
-			$file_ext  = pathinfo( $filename, PATHINFO_EXTENSION );
+			// Store under an unguessable name; the display name stays in original_name.
+			$stored   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $movefile['file'], PATHINFO_EXTENSION ), $filebrowser_dir );
+			$new_path = $filebrowser_dir . '/' . $stored;
+			if ( @rename( $movefile['file'], $new_path ) ) {
+				$filename  = $stored;
+				$file_path = $new_path;
+			} else {
+				$filename  = basename( $movefile['file'] );
+				$file_path = $movefile['file'];
+			}
+			$file_url = $filebrowser_url . '/' . $filename;
+			$file_ext = pathinfo( $filename, PATHINFO_EXTENSION );
 
 			// Keep display names unique within the folder: "logo.png", "logo (1).png", …
 			$original_name = $this->unique_file_name_in_folder( $original_name, $folder_id );
@@ -451,6 +465,35 @@ class LinkNacionalFilebrowserAdmin {
 	}
 
 	/**
+	 * Toggle the download restriction flag of a file. When restricted (0), the
+	 * file is only downloadable by managers; visitors are blocked server-side.
+	 */
+	public function toggle_download_ajax() {
+		check_ajax_referer( 'linknacional_filebrowser_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
+		}
+		$id = isset( $_POST['id'] ) ? intval( wp_unslash( $_POST['id'] ) ) : 0;
+		if ( $id <= 0 ) {
+			wp_send_json_error( esc_html__( 'Invalid item', 'linknacional-file-browser' ) );
+		}
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$current = $wpdb->get_var( $wpdb->prepare( "SELECT allow_download FROM {$this->table_files()} WHERE id = %d", $id ) );
+		if ( null === $current ) {
+			wp_send_json_error( esc_html__( 'Item not found', 'linknacional-file-browser' ) );
+		}
+		$new_value = $current ? 0 : 1;
+		$wpdb->update( $this->table_files(), array( 'allow_download' => $new_value ), array( 'id' => $id ), array( '%d' ), array( '%d' ) );
+		wp_send_json_success( array(
+			'allow_download' => (bool) $new_value,
+			'message'        => $new_value
+				? esc_html__( 'Download allowed', 'linknacional-file-browser' )
+				: esc_html__( 'Download restricted', 'linknacional-file-browser' ),
+		) );
+	}
+
+	/**
 	 * Return the items that belong to a collection: favorites | recent | trash.
 	 */
 	public function get_collection_ajax() {
@@ -480,6 +523,7 @@ class LinkNacionalFilebrowserAdmin {
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$folders = $this->attach_folder_item_counts( $folders );
+		$files   = LinkNacionalFilebrowserFiles::prepare_rows( $files );
 		wp_send_json_success( array( 'folders' => $folders, 'files' => $files ) );
 	}
 
@@ -628,9 +672,7 @@ class LinkNacionalFilebrowserAdmin {
 		$dir      = $upload['basedir'] . '/linknacional-filebrowser';
 		$url      = $upload['baseurl'] . '/linknacional-filebrowser';
 
-		$pathinfo = pathinfo( $new_name );
-		$ext      = isset( $pathinfo['extension'] ) ? '.' . $pathinfo['extension'] : '';
-		$stored   = wp_unique_filename( $dir, sanitize_file_name( $pathinfo['filename'] . $ext ) );
+		$stored   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $new_name, PATHINFO_EXTENSION ), $dir );
 
 		$dest_path = $dir . '/' . $stored;
 		if ( ! file_exists( $file->file_path ) ) {
@@ -836,7 +878,7 @@ class LinkNacionalFilebrowserAdmin {
 		$folders = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_folders()} WHERE parent_id = %d AND is_trashed = 0 ORDER BY name ASC", $folder_id));
 		$files = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE folder_id = %d AND is_trashed = 0 ORDER BY original_name ASC", $folder_id));
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array('folders' => $this->attach_folder_item_counts( $folders ), 'files' => $files);
+		return array('folders' => $this->attach_folder_item_counts( $folders ), 'files' => LinkNacionalFilebrowserFiles::prepare_rows( $files ));
 	}
 
 	private function build_folder_path($folder_id) {
@@ -1214,7 +1256,7 @@ class LinkNacionalFilebrowserAdmin {
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$files = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE folder_id = %d AND is_trashed = 0 ORDER BY original_name ASC", $folder_id));
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		wp_send_json_success( $files );
+		wp_send_json_success( LinkNacionalFilebrowserFiles::prepare_rows( $files ) );
 	}
 
 	public function get_all_folders_admin_frontend() {
@@ -1227,7 +1269,7 @@ class LinkNacionalFilebrowserAdmin {
 		$folders = $wpdb->get_results("SELECT * FROM {$this->table_folders()} WHERE is_trashed = 0 ORDER BY parent_id ASC, name ASC");
 		$files = $wpdb->get_results("SELECT * FROM {$this->table_files()} WHERE is_trashed = 0 ORDER BY folder_id ASC, original_name ASC");
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		wp_send_json_success(array('folders' => $folders, 'files' => $files));
+		wp_send_json_success(array('folders' => $folders, 'files' => LinkNacionalFilebrowserFiles::prepare_rows( $files )));
 	}
 
 	private function table_folders() {
@@ -1353,8 +1395,9 @@ class LinkNacionalFilebrowserAdmin {
 					++$suffix_num;
 				}
 
-				$new_file_path = $new_dir . '/' . $unique_name;
-				$new_file_url  = $new_url . '/' . $unique_name;
+				$stored_name   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $unique_name, PATHINFO_EXTENSION ), $new_dir );
+				$new_file_path = $new_dir . '/' . $stored_name;
+				$new_file_url  = $new_url . '/' . $stored_name;
 
 				// Copy physical file
 				$old_file_path = $old_dir . '/' . $file->name;
@@ -1365,7 +1408,7 @@ class LinkNacionalFilebrowserAdmin {
 				$inserted = $wpdb->insert(
 					$this->table_files(),
 					array(
-						'name'          => $unique_name,
+						'name'          => $stored_name,
 						'original_name' => $unique_name,
 						'folder_id'     => $new_folder_id,
 						'file_type'     => $file->file_type,
