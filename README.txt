@@ -2,8 +2,8 @@
 Contributors: linknacional
 Tags: file manager, documents, upload, folders, download
 Requires at least: 6.0
-Tested up to: 7.0
-Stable tag: 1.0.2
+Tested up to: 7.1
+Stable tag: 1.1.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,13 +19,17 @@ Link Nacional File Browser lets you create and manage a complete hierarchical fi
 * **Hierarchical Folder System** — Create nested folders organized like a file explorer
 * **Multiple File Uploads** — Support for PDF, Word, Excel, PowerPoint, images, and more
 * **Search Interface** — Quick file and folder search on the frontend
+* **Collections** — Favorites, Recent, and Trash to organize what matters
+* **Copy & Move** — Duplicate or relocate files and whole folder trees
+* **Bulk Actions** — Select several items to act on them at once
+* **Shortcode Scoping** — Start from a folder and hide the ones you don't need
 * **Responsive Design** — Grid or list layout, adaptable to mobile devices
 * **Breadcrumb Navigation** — Intuitive folder browsing
 * **Flexible Shortcode** — Multiple configuration options
 
 **Supported File Types:**
 * Documents: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT
-* Images: JPG, JPEG, PNG, GIF
+* Images: JPG, JPEG, PNG, GIF, WEBP
 
 == Installation ==
 
@@ -92,6 +96,19 @@ Yes! The plugin is built with responsive design and automatically adapts to tabl
 7. Admin interface — How to use the shortcode instructions panel
 
 == Changelog ==
+
+= 1.1.0 - 2026-09-24 =
+* Redesigned admin and frontend interfaces: sidebar collections, workspace toolbar, detail drawer, toasts, and a fully refreshed look.
+* Favorites: mark files and folders as favorites and browse them in a dedicated collection (admin and frontend).
+* Recent: a collection listing the most recently added files (admin and frontend).
+* Trash: soft-delete items with restore, permanent delete, and empty trash (admin).
+* Copy: duplicate files and whole folder trees.
+* Move: move files and folders via drag & drop or the "Move to…" modal, with folder-cycle protection.
+* Bulk actions: select multiple items to delete them at once.
+* Uploads: drag & drop with a multi-file queue and progress; added WEBP support.
+* Shortcode scoping: new `root` and `exclude` attributes to start from a folder and hide folders (case-insensitive).
+* Database upgrade runs automatically on update (favorites/trash columns) without reactivating the plugin.
+* Fixed the collection breadcrumb — it now shows only the selected collection, with its icon.
 
 = 1.0.2 - 2026-08-03 =
 * Bug: LiteSpeed adaptation loading.
