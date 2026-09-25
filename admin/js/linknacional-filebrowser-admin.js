@@ -218,6 +218,7 @@
 			actions.push({ label: t('move_to', 'Move to…'), icon: 'fas fa-arrow-right-arrow-left', run: function () { openMoveModal(item, 'move'); } });
 			actions.push({ label: t('copy_to', 'Copy to…'), icon: 'fas fa-copy', run: function () { openMoveModal(item, 'copy'); } });
 			actions.push({ label: t('edit_name', 'Rename'), icon: 'fas fa-pen', run: function () { openRename(item); } });
+			actions.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 			actions.push({ label: t('delete_folder', 'Delete folder'), icon: 'fas fa-trash', danger: true, run: function () { trashItems([item]); } });
 		} else {
 			actions.push({ label: t('preview', 'Preview'), icon: 'fas fa-eye', run: function () { openDrawer(item); } });
@@ -227,6 +228,7 @@
 			actions.push({ label: t('move_to', 'Move to…'), icon: 'fas fa-arrow-right-arrow-left', run: function () { openMoveModal(item, 'move'); } });
 			actions.push({ label: t('copy_to', 'Copy to…'), icon: 'fas fa-copy', run: function () { openMoveModal(item, 'copy'); } });
 			actions.push({ label: t('edit_name', 'Rename'), icon: 'fas fa-pen', run: function () { openRename(item); } });
+			actions.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 			actions.push({ label: t('move_to_trash', 'Move to trash'), icon: 'fas fa-trash', danger: true, run: function () { trashItems([item]); } });
 		}
 		return actions;
@@ -900,6 +902,7 @@
 				icon: item.is_favorite ? 'fas fa-star' : 'far fa-star',
 				run: function () { toggleFavorite(item); }
 			});
+			acts.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 		}
 		acts.forEach(function (a) {
 			$('<button type="button" class="lkn-fb-quick-item">')
@@ -941,6 +944,95 @@
 		try { document.execCommand('copy'); done(); }
 		catch (err) { window.prompt(t('copied_fallback', 'Copy this link:'), text); }
 		$tmp.remove();
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  Copy for AI (Markdown export for LLMs)
+	 * ------------------------------------------------------------------ */
+
+	function mdEscape(text) {
+		return String(text == null ? '' : text).replace(/[\\[\]]/g, '\\$&');
+	}
+
+	function mdLink(text, url) {
+		return '[' + mdEscape(text) + '](' + String(url == null ? '' : url).replace(/\)/g, '%29') + ')';
+	}
+
+	function folderNameOf(id) {
+		var hit = (state.folders || []).filter(function (x) { return Number(x.id) === Number(id); })[0];
+		return hit ? hit.name : '';
+	}
+
+	function descriptionOf(id) {
+		var hit = (state.files || []).filter(function (x) { return Number(x.id) === Number(id); })[0];
+		return hit ? hit.description : '';
+	}
+
+	function groupBy(list, key, sortKey) {
+		var out = {};
+		list.forEach(function (item) {
+			var k = Number(item[key]) || 0;
+			(out[k] = out[k] || []).push(item);
+		});
+		Object.keys(out).forEach(function (k) {
+			out[k].sort(function (a, b) { return String(a[sortKey]).localeCompare(String(b[sortKey])); });
+		});
+		return out;
+	}
+
+	function appendFolderMarkdown(out, byParent, byFolder, folderId, level) {
+		var heading = new Array(Math.min(level, 6) + 1).join('#');
+		(byFolder[Number(folderId)] || []).forEach(function (f) {
+			out.push('- ' + mdLink(f.original_name, f.file_url) + ' (' + formatSize(f.file_size) + ')');
+		});
+		(byParent[Number(folderId)] || []).forEach(function (sf) {
+			out.push('');
+			out.push(heading + ' ' + mdEscape(sf.name));
+			out.push('');
+			appendFolderMarkdown(out, byParent, byFolder, sf.id, level + 1);
+		});
+	}
+
+	function buildFileMarkdown(item) {
+		var name = item.name || item.original_name || '';
+		var ext = (item.filetype || extOf(name) || '').toLowerCase();
+		var size = item.size !== undefined ? item.size : item.file_size;
+		var url = item.url || item.file_url || '';
+		var folder = item.folder_name || folderNameOf(item.folder_id);
+		var lines = ['# ' + mdEscape(name), ''];
+		lines.push('- **' + t('detail_type', 'Type') + ':** ' + (ext ? ext.toUpperCase() + ' (' + typeCategory(ext) + ')' : typeCategory('')));
+		lines.push('- **' + t('detail_size', 'Size') + ':** ' + formatSize(size));
+		var date = formatDate(item.updated_at || item.created_at);
+		if (date) { lines.push('- **' + t('detail_modified', 'Modified') + ':** ' + date); }
+		if (url) { lines.push('- **' + t('ai_url', 'URL') + ':** ' + url); }
+		if (folder) { lines.push('- **' + t('folder_text', 'Folder') + ':** ' + folder); }
+		var desc = item.description || descriptionOf(item.id);
+		if (desc) { lines.push('- **' + t('ai_description', 'Description') + ':** ' + String(desc).replace(/\s+/g, ' ').trim()); }
+		return lines.join('\n');
+	}
+
+	function buildFolderMarkdown(folder) {
+		var byParent = groupBy(state.folders || [], 'parent_id', 'name');
+		var byFolder = groupBy(state.files || [], 'folder_id', 'original_name');
+		var out = ['# ' + mdEscape(folder ? folder.name : t('ai_title', 'File Browser')), ''];
+		appendFolderMarkdown(out, byParent, byFolder, folder ? folder.id : 0, 2);
+		return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+	}
+
+	function buildAIMarkdown(item) {
+		if (item && item.type === 'file') { return buildFileMarkdown(item); }
+		return buildFolderMarkdown(item && item.type === 'folder' ? item : null);
+	}
+
+	function copyForAI(item) {
+		var text = buildAIMarkdown(item);
+		if (!text) { toast(t('ai_nothing', 'Nothing to copy'), 'error'); return; }
+		var done = function () { toast(t('ai_copied', 'Copied for AI'), 'success'); };
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+		} else {
+			fallbackCopy(text, done);
+		}
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -1523,6 +1615,9 @@
 				window.setTimeout(function () { $btn.html(original); }, 1800);
 			});
 		});
+
+		/* ---- Copy for AI ---- */
+		$('#lkn-fb-copy-ai').on('click', function () { copyForAI(null); });
 
 		/* ---- Migration ---- */
 		$('#linknacional-migrate-btn').on('click', runMigration);

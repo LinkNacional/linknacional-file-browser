@@ -146,6 +146,12 @@ class LinkNacionalFilebrowserAdmin {
 			'type_video'        => esc_html__( 'Video', 'linknacional-file-browser' ),
 			'type_archive'      => esc_html__( 'Archive', 'linknacional-file-browser' ),
 			'type_file'         => esc_html__( 'File', 'linknacional-file-browser' ),
+			'copy_ai'           => esc_html__( 'Copy for AI', 'linknacional-file-browser' ),
+			'ai_copied'         => esc_html__( 'Copied for AI', 'linknacional-file-browser' ),
+			'ai_nothing'        => esc_html__( 'Nothing to copy', 'linknacional-file-browser' ),
+			'ai_title'          => esc_html__( 'File Browser', 'linknacional-file-browser' ),
+			'ai_url'            => esc_html__( 'URL', 'linknacional-file-browser' ),
+			'ai_description'    => esc_html__( 'Description', 'linknacional-file-browser' ),
 		));
 	}
 
