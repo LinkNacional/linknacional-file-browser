@@ -470,7 +470,7 @@
 .linknacional-filebrowser-public .lnfb-kebab {
 	position: absolute;
 	top: 6px;
-	right: 18px;
+	right: 6px;
 	z-index: 4;
 	width: 26px;
 	height: 26px;
@@ -833,11 +833,11 @@
 	z-index: 3;
 }
 
-/* On grid/list cards the favourite star is a small indicator inside the
-   thumbnail's bottom-right corner (never over the file data below). */
+/* On grid/list cards the favourite star is a small indicator, bottom-right of
+   the thumbnail, aligned with the kebab. */
 .linknacional-filebrowser-public .lnfb-item .lnfb-fav-badge {
 	top: 66px;
-	right: 18px;
+	right: 6px;
 	bottom: auto;
 	width: 26px;
 	height: 26px;
@@ -851,11 +851,11 @@
 }
 
 /* Lock badge: marks a file whose download is restricted for visitors.
-   Sits inside the thumbnail's bottom-left corner (above the data). */
+   Bottom-left of the thumbnail, aligned with the checkbox. */
 .linknacional-filebrowser-public .lnfb-lock-badge {
 	position: absolute;
 	top: 66px;
-	left: 18px;
+	left: 8px;
 	bottom: auto;
 	display: inline-flex;
 	align-items: center;

@@ -635,7 +635,7 @@
 .lkn-fb-check {
 	position: absolute;
 	top: 8px;
-	left: 18px;
+	left: 8px;
 	z-index: 4;
 	cursor: pointer;
 	line-height: 1;
@@ -685,7 +685,7 @@
 .lkn-fb-kebab {
 	position: absolute;
 	top: 6px;
-	right: 18px;
+	right: 6px;
 	z-index: 4;
 	width: 26px;
 	height: 26px;
@@ -1237,7 +1237,7 @@
 
 	.lkn-fb-check {
 		top: 5px;
-		left: 18px;
+		left: 5px;
 		padding: 6px;
 	}
 
@@ -1397,11 +1397,11 @@
 .lkn-fb-fav-btn.is-fav { color: #dba617; background: #fff8e1; }
 
 /* On grid/list cards: smaller, revealed on hover, always shown when favourited.
-   Anchored to the bottom corners of the thumbnail (not the card) so they never
-   overlap the file name/meta below. */
+   Bottom corners of the thumbnail, horizontally aligned with the checkbox
+   (left) and kebab (right) so the columns line up. */
 .lkn-fb-item .lkn-fb-fav-btn {
 	top: 66px;
-	right: 18px;
+	right: 6px;
 	bottom: auto;
 	width: 26px;
 	height: 26px;
@@ -1440,10 +1440,10 @@
 }
 .lkn-fb-lock-btn:hover { color: var(--lkn-fb-primary); transform: scale(1.08); }
 .lkn-fb-lock-btn.is-locked { opacity: 1; color: #d63638; background: #fdecea; }
-/* On cards, sit inside the thumbnail's bottom-left corner (above the data). */
+/* On cards, bottom-left corner of the thumbnail, aligned with the checkbox. */
 .lkn-fb-item .lkn-fb-lock-btn {
 	top: 66px;
-	left: 18px;
+	left: 8px;
 	bottom: auto;
 }
 .lkn-fb-item:hover .lkn-fb-lock-btn,
