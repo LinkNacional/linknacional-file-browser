@@ -635,7 +635,7 @@
 .lkn-fb-check {
 	position: absolute;
 	top: 8px;
-	left: 8px;
+	left: 18px;
 	z-index: 4;
 	cursor: pointer;
 	line-height: 1;
@@ -685,7 +685,7 @@
 .lkn-fb-kebab {
 	position: absolute;
 	top: 6px;
-	right: 6px;
+	right: 18px;
 	z-index: 4;
 	width: 26px;
 	height: 26px;
@@ -1237,7 +1237,7 @@
 
 	.lkn-fb-check {
 		top: 5px;
-		left: 5px;
+		left: 18px;
 		padding: 6px;
 	}
 
