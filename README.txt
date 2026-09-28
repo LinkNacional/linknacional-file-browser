@@ -109,6 +109,12 @@ Yes! The plugin is built with responsive design and automatically adapts to tabl
 * Shortcode scoping: new `root` and `exclude` attributes to start from a folder and hide folders (case-insensitive).
 * Database upgrade runs automatically on update (favorites/trash columns) without reactivating the plugin.
 * Fixed the collection breadcrumb — it now shows only the selected collection, with its icon.
+* Fullscreen viewer: open PDF, Office and images in a popup with crisp zoom (PDF.js), page navigation and pan.
+* Office preview: Word/Excel/PowerPoint files converted to PDF server-side for viewing (without becoming a download).
+* Temporary per-file share links (valid for 1 hour), usable outside the session and by AI tools.
+* Per-file download restriction: the file stays viewable but cannot be downloaded.
+* Copy for AI: exports markdown with per-file share links.
+* Restricted images rendered on canvas, with right-click/drag blocked.
 
 = 1.0.2 - 2026-08-03 =
 * Bug: LiteSpeed adaptation loading.

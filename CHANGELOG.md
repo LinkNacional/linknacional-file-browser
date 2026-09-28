@@ -10,6 +10,12 @@
 * Escopo do shortcode: novos atributos `root` e `exclude` para iniciar em uma pasta e ocultar pastas (sem diferenciar maiúsculas/minúsculas).
 * Atualização do banco de dados automática ao atualizar (colunas de favoritos/lixeira) sem reativar o plugin.
 * Correção do breadcrumb das coleções — exibe apenas a coleção selecionada, com o ícone correspondente.
+* Visualizador fullscreen: abre PDF, Office e imagens em um popup com zoom nítido (PDF.js), navegação por páginas e pan.
+* Preview de Office: arquivos Word/Excel/PowerPoint convertidos em PDF no servidor para visualização (sem virar download).
+* Link temporário de compartilhamento por arquivo (válido por 1 hora), utilizável fora da sessão e por IAs.
+* Restrição de download por arquivo: o arquivo continua visível, mas o download é bloqueado.
+* Copiar para IA: exporta o markdown com links de compartilhamento dos arquivos.
+* Imagens restritas renderizadas em canvas, com bloqueio de clique-direito/arrastar.
 
 # 1.0.2 - 03/08/2026
 * Bug: Carregamento de adaptação do LiteSpeed.
