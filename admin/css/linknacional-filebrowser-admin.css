@@ -1624,6 +1624,15 @@ body.lnfb-viewer-open { overflow: hidden !important; }
 .lnfb-lightbox[hidden] { display: none; }
 .lnfb-lightbox.is-open { opacity: 1; }
 .lnfb-lightbox [hidden] { display: none !important; }
+/* Higher specificity than the toolbar's `display:...!important` rules below,
+   which would otherwise win the tie and reveal hidden controls (e.g. the
+   download button on a restricted file). */
+.lnfb-lightbox .lnfb-lb-btn[hidden],
+.lnfb-lightbox .lnfb-lb-zoomgroup[hidden],
+.lnfb-lightbox .lnfb-lb-pagegroup[hidden],
+.lnfb-lightbox .lnfb-lightbox-img[hidden],
+.lnfb-lightbox .lnfb-lightbox-canvas[hidden],
+.lnfb-lightbox .lnfb-lightbox-text[hidden] { display: none !important; }
 
 .lnfb-lightbox .lnfb-lightbox-bar {
 	display: flex !important;
