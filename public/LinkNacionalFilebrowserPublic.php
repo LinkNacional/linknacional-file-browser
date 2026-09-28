@@ -400,6 +400,9 @@ class LinkNacionalFilebrowserPublic {
 											<option value="oldest"><?php esc_html_e( 'Oldest first', 'linknacional-file-browser' ); ?></option>
 											<option value="size"><?php esc_html_e( 'Largest first', 'linknacional-file-browser' ); ?></option>
 										</select>
+										<button type="button" class="lnfb-copy-ai" id="lnfb-copy-ai">
+											<i class="fas fa-robot"></i> <?php esc_html_e( 'Copy for AI', 'linknacional-file-browser' ); ?>
+										</button>
 									</div>
 									<div class="lnfb-viewtoggle" role="group" aria-label="<?php esc_attr_e( 'View', 'linknacional-file-browser' ); ?>">
 										<button type="button" class="lnfb-view-btn <?php echo $layout === 'grid' ? 'is-active' : ''; ?>" data-layout="grid" title="<?php esc_attr_e( 'Grid view', 'linknacional-file-browser' ); ?>"><i class="fas fa-table-cells-large"></i></button>

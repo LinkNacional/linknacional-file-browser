@@ -193,6 +193,28 @@
 	color: #fff;
 }
 
+/* Toolbar "Copy for AI" button (mirrors the admin). */
+.linknacional-filebrowser-public .lnfb-copy-ai {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 40px;
+	padding: 0 14px;
+	border: 1px solid var(--lnfb-border-strong);
+	border-radius: var(--lnfb-radius-sm);
+	background: #fff;
+	color: var(--lnfb-text);
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	flex-shrink: 0;
+	-webkit-appearance: none;
+	appearance: none;
+	transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.linknacional-filebrowser-public .lnfb-copy-ai:hover { background: #f0f0f1; border-color: var(--lnfb-primary); color: var(--lnfb-primary); }
+.linknacional-filebrowser-public .lnfb-copy-ai i { font-size: 14px; }
+
 /* ---------------------------- Breadcrumb -------------------------- */
 .linknacional-filebrowser-public .lnfb-breadcrumb {
 	display: flex;

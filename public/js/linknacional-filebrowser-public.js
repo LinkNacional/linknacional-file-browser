@@ -495,6 +495,19 @@
 		}, function () { copy({}); });
 	}
 
+	/**
+	 * Copy the current browser scope for AI. When the shortcode sets a `root`
+	 * folder, that folder is the base; otherwise the whole tree (base 0).
+	 */
+	function copyScopeForAI() {
+		var base = null;
+		if (Number(state.rootId) > 0) {
+			var f = (state.folders || []).filter(function (x) { return Number(x.id) === Number(state.rootId); })[0];
+			base = { type: 'folder', id: Number(state.rootId), name: f ? f.name : t('home', 'Home') };
+		}
+		copyForAI(base);
+	}
+
 	/* ------------------------------------------------------------------ *
 	 *  Fullscreen viewer (lightbox)
 	 * ------------------------------------------------------------------ */
@@ -1361,6 +1374,11 @@
 			var collection = $(this).data('collection');
 			if (collection === state.collection && collection === 'files') { return; }
 			loadCollection(collection);
+		});
+
+		/* Toolbar: copy the current scope for AI */
+		$(document).on('click', '.linknacional-filebrowser-public #lnfb-copy-ai', function () {
+			copyScopeForAI();
 		});
 
 		/* Layout */
