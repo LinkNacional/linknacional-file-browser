@@ -266,6 +266,38 @@
 	color: #fff;
 }
 
+/* Toolbar "Copy for AI" button — matches the frontend look (blue on hover),
+   overriding the default WordPress `.button` chrome. */
+.lkn-fb-toolbar .lkn-fb-copy-ai {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	height: 34px;
+	min-height: 0;
+	margin: 0;
+	padding: 0 14px;
+	border: 1px solid var(--lkn-fb-border-strong);
+	border-radius: var(--lkn-fb-radius-sm);
+	background: #fff;
+	color: var(--lkn-fb-text);
+	font-size: 13px;
+	line-height: 1;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.lkn-fb-toolbar .lkn-fb-copy-ai:hover {
+	background: #f0f0f1;
+	border-color: var(--lkn-fb-primary);
+	color: var(--lkn-fb-primary);
+}
+.lkn-fb-toolbar .lkn-fb-copy-ai:focus {
+	border-color: var(--lkn-fb-primary);
+	box-shadow: 0 0 0 1px var(--lkn-fb-primary);
+	outline: 2px solid transparent;
+}
+.lkn-fb-toolbar .lkn-fb-copy-ai i { font-size: 13px; }
+
 /* ---------------------------- Breadcrumb -------------------------- */
 .lkn-fb-breadcrumb {
 	display: flex;

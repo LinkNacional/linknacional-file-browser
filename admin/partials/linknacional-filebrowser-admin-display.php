@@ -110,7 +110,7 @@ $lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensio
 										<option value="oldest"><?php esc_html_e( 'Oldest first', 'linknacional-file-browser' ); ?></option>
 										<option value="size"><?php esc_html_e( 'Largest first', 'linknacional-file-browser' ); ?></option>
 									</select>
-									<button type="button" class="button" id="lkn-fb-copy-ai">
+									<button type="button" class="button lkn-fb-copy-ai" id="lkn-fb-copy-ai">
 										<i class="fas fa-robot"></i> <?php esc_html_e( 'Copy for AI', 'linknacional-file-browser' ); ?>
 									</button>
 								</div>
