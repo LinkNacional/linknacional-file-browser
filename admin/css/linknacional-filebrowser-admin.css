@@ -1400,7 +1400,7 @@
    Bottom corners of the thumbnail, horizontally aligned with the checkbox
    (left) and kebab (right) so the columns line up. */
 .lkn-fb-item .lkn-fb-fav-btn {
-	top: 66px;
+	top: 74px;
 	right: 6px;
 	bottom: auto;
 	width: 26px;
@@ -1442,7 +1442,7 @@
 .lkn-fb-lock-btn.is-locked { opacity: 1; color: #d63638; background: #fdecea; }
 /* On cards, bottom-left corner of the thumbnail, aligned with the checkbox. */
 .lkn-fb-item .lkn-fb-lock-btn {
-	top: 66px;
+	top: 74px;
 	left: 8px;
 	bottom: auto;
 }
