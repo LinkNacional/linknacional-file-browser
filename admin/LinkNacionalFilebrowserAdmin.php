@@ -225,6 +225,10 @@ class LinkNacionalFilebrowserAdmin {
 			'xlsx'         => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 			'ppt'          => 'application/vnd.ms-powerpoint',
 			'pptx'         => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+			'odt'          => 'application/vnd.oasis.opendocument.text',
+			'ods'          => 'application/vnd.oasis.opendocument.spreadsheet',
+			'odp'          => 'application/vnd.oasis.opendocument.presentation',
+			'rtf'          => 'application/rtf',
 			'txt'          => 'text/plain',
 			'jpg|jpeg|jpe' => 'image/jpeg',
 			'png'          => 'image/png',
@@ -239,7 +243,7 @@ class LinkNacionalFilebrowserAdmin {
 	 * @return string
 	 */
 	private function get_allowed_extensions() {
-		return '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp';
+		return '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.rtf,.txt,.jpg,.jpeg,.png,.gif,.webp';
 	}
 
 	public function linknacional_get_admin_nonce() {
