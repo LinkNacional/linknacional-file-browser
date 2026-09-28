@@ -28,6 +28,11 @@ class LinkNacionalFilebrowserFiles {
 	const TOKEN_TTL = 3600;
 
 	/**
+	 * Cron hook that purges expired/revoked share tokens.
+	 */
+	const CLEANUP_HOOK = 'linknacional_filebrowser_purge_tokens';
+
+	/**
 	 * Directory that holds the physical files, kept outside the webroot.
 	 *
 	 * @return string
@@ -172,7 +177,11 @@ class LinkNacionalFilebrowserFiles {
 			return '';
 		}
 		global $wpdb;
-		self::purge_expired_tokens();
+		// Purge at most once per hour on the hot path; a daily cron also runs it.
+		if ( false === get_transient( 'linknacional_filebrowser_tokens_purged' ) ) {
+			self::purge_expired_tokens();
+			set_transient( 'linknacional_filebrowser_tokens_purged', 1, HOUR_IN_SECONDS );
+		}
 
 		$raw     = bin2hex( random_bytes( 32 ) );
 		$hash    = hash( 'sha256', $raw );
@@ -221,49 +230,35 @@ class LinkNacionalFilebrowserFiles {
 	}
 
 	/**
-	 * Revoke a single token by id.
-	 *
-	 * @param int $token_id
-	 * @return bool
-	 */
-	public static function revoke_share_token( $token_id ) {
-		global $wpdb;
-		return false !== $wpdb->update(
-			self::tokens_table(),
-			array( 'revoked' => 1 ),
-			array( 'id' => (int) $token_id ),
-			array( '%d' ),
-			array( '%d' )
-		);
-	}
-
-	/**
-	 * Revoke every active token issued for a file.
-	 *
-	 * @param int $file_id
-	 * @return int Number of rows affected.
-	 */
-	public static function revoke_file_tokens( $file_id ) {
-		global $wpdb;
-		return (int) $wpdb->update(
-			self::tokens_table(),
-			array( 'revoked' => 1 ),
-			array( 'file_id' => (int) $file_id ),
-			array( '%d' ),
-			array( '%d' )
-		);
-	}
-
-	/**
-	 * Drop tokens that expired more than a day ago (also revoked ones).
+	 * Drop expired and revoked tokens so the table only holds usable rows.
 	 *
 	 * @return void
 	 */
 	public static function purge_expired_tokens() {
 		global $wpdb;
-		$cutoff = gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+		$now = gmdate( 'Y-m-d H:i:s' );
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . self::tokens_table() . ' WHERE expires_at < %s', $cutoff ) );
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . self::tokens_table() . ' WHERE expires_at < %s OR revoked = 1', $now ) );
+	}
+
+	/**
+	 * Schedule the daily token-cleanup cron (idempotent).
+	 *
+	 * @return void
+	 */
+	public static function schedule_cleanup() {
+		if ( ! wp_next_scheduled( self::CLEANUP_HOOK ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::CLEANUP_HOOK );
+		}
+	}
+
+	/**
+	 * Unschedule the token-cleanup cron.
+	 *
+	 * @return void
+	 */
+	public static function clear_cleanup() {
+		wp_clear_scheduled_hook( self::CLEANUP_HOOK );
 	}
 
 	/**

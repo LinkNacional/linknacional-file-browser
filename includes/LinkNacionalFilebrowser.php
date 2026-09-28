@@ -33,6 +33,8 @@ class LinkNacionalFilebrowser {
 
 	private function define_core_hooks() {
 		$this->loader->add_action( 'plugins_loaded', LinkNacionalFilebrowserActivator::class, 'maybe_upgrade' );
+		// Daily cleanup of expired/revoked share tokens.
+		$this->loader->add_action( LinkNacionalFilebrowserFiles::CLEANUP_HOOK, LinkNacionalFilebrowserFiles::class, 'purge_expired_tokens' );
 	}
 
 	private function define_admin_hooks() {
@@ -65,7 +67,6 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_linknacional_get_admin_nonce', $plugin_admin, 'linknacional_get_admin_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_migrate', $plugin_admin, 'migrate_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_share_files', $plugin_admin, 'share_files_ajax' );
-		$this->loader->add_action( 'wp_ajax_linknacional_revoke_share', $plugin_admin, 'revoke_share_ajax' );
 	}
 
 	private function define_public_hooks() {

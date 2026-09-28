@@ -15,6 +15,7 @@ class LinkNacionalFilebrowserActivator {
 		self::create_tables();
 		\update_option( 'linknacional_filebrowser_db_version', self::DB_VERSION );
 		self::maybe_migrate_storage();
+		LinkNacionalFilebrowserFiles::schedule_cleanup();
 	}
 
 	/**
@@ -27,6 +28,7 @@ class LinkNacionalFilebrowserActivator {
 			\update_option( 'linknacional_filebrowser_db_version', self::DB_VERSION );
 		}
 		self::maybe_migrate_storage();
+		LinkNacionalFilebrowserFiles::schedule_cleanup();
 	}
 
 	private static function create_tables() {

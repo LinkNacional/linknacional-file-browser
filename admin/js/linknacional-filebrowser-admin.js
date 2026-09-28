@@ -226,10 +226,8 @@
 			actions.push({ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } });
 			if (!locked) {
 				actions.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
-				actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 			}
-			actions.push({ label: t('share', 'Share'), icon: 'fas fa-share-nodes', run: function () { shareFile(item); } });
-			actions.push({ label: t('revoke_share', 'Revoke share link'), icon: 'fas fa-link-slash', run: function () { revokeShare(item); } });
+			actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 			actions.push({ label: favLabel, icon: favIcon, run: function () { toggleFavorite(item); } });
 			actions.push({ label: t('move_to', 'Move to…'), icon: 'fas fa-arrow-right-arrow-left', run: function () { openMoveModal(item, 'move'); } });
 			actions.push({ label: t('copy_to', 'Copy to…'), icon: 'fas fa-copy', run: function () { openMoveModal(item, 'copy'); } });
@@ -959,8 +957,6 @@
 		var acts = [];
 		acts.push({ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } });
 		if (state.collection !== 'trash') {
-			acts.push({ label: t('share', 'Share'), icon: 'fas fa-share-nodes', run: function () { shareFile(item); } });
-			acts.push({ label: t('revoke_share', 'Revoke share link'), icon: 'fas fa-link-slash', run: function () { revokeShare(item); } });
 			acts.push({ label: t('move_to', 'Move to…'), icon: 'fas fa-arrow-right-arrow-left', run: function () { openMoveModal(item, 'move'); } });
 			acts.push({ label: t('copy_to', 'Copy to…'), icon: 'fas fa-copy', run: function () { openMoveModal(item, 'copy'); } });
 			acts.push({
@@ -996,13 +992,13 @@
 	}
 
 	function copyLink(item) {
-		var url = item.url;
 		var done = function () { toast(t('link_copied', 'Link copied to clipboard'), 'success'); };
-		if (navigator.clipboard && navigator.clipboard.writeText) {
-			navigator.clipboard.writeText(url).then(done, function () { fallbackCopy(url, done); });
-		} else {
-			fallbackCopy(url, done);
-		}
+		// The shareable link is the token-protected viewer URL, never the
+		// internal proxy URL. Fall back to the proxy URL only if minting fails.
+		api('linknacional_share_files', { file_ids: String(item.id) }).then(function (response) {
+			var url = response && response.success && response.data && response.data.links ? response.data.links[item.id] : '';
+			copyText(url || item.url, done);
+		}, function () { copyText(item.url, done); });
 	}
 
 	function fallbackCopy(text, done) {
@@ -1023,28 +1019,6 @@
 		} else {
 			fallbackCopy(text, done);
 		}
-	}
-
-	function shareFile(item) {
-		api('linknacional_share_files', { file_ids: String(item.id) }).then(function (response) {
-			if (response && response.success && response.data && response.data.links) {
-				var url = response.data.links[item.id] || '';
-				if (!url) { toast(t('share_error', 'Could not create the link'), 'error'); return; }
-				copyText(url, function () { toast(t('share_link_copied', 'Share link copied (valid for 1 hour)'), 'success'); });
-			} else {
-				toast((response && response.data) || t('share_error', 'Could not create the link'), 'error');
-			}
-		});
-	}
-
-	function revokeShare(item) {
-		api('linknacional_revoke_share', { file_id: item.id }).then(function (response) {
-			if (response && response.success) {
-				toast(t('share_stopped', 'Share link revoked'), 'success');
-			} else {
-				toast((response && response.data) || t('share_error', 'Could not create the link'), 'error');
-			}
-		});
 	}
 
 	var viewer = { item: null, mode: 'none', page: 0, pages: 1, fit: true, scale: 1, tx: 0, ty: 0, dragging: false, sx: 0, sy: 0, pdfDoc: null, renderSeq: 0, renderTask: null, closeTimer: null, locked: false, imgEl: null };

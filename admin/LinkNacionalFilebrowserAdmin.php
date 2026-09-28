@@ -166,11 +166,6 @@ class LinkNacionalFilebrowserAdmin {
 			'zoom_fit'          => esc_html__( 'Fit to screen', 'linknacional-file-browser' ),
 			'prev_page'         => esc_html__( 'Previous page', 'linknacional-file-browser' ),
 			'next_page'         => esc_html__( 'Next page', 'linknacional-file-browser' ),
-			'share'             => esc_html__( 'Share', 'linknacional-file-browser' ),
-			'revoke_share'      => esc_html__( 'Revoke share link', 'linknacional-file-browser' ),
-			'share_link_copied' => esc_html__( 'Share link copied (valid for 1 hour)', 'linknacional-file-browser' ),
-			'share_stopped'     => esc_html__( 'Share link revoked', 'linknacional-file-browser' ),
-			'share_error'       => esc_html__( 'Could not create the link', 'linknacional-file-browser' ),
 		));
 	}
 
@@ -554,21 +549,6 @@ class LinkNacionalFilebrowserAdmin {
 		) );
 	}
 
-	/**
-	 * Revoke every active share link issued for a file.
-	 */
-	public function revoke_share_ajax() {
-		check_ajax_referer( 'linknacional_filebrowser_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
-		}
-		$file_id = isset( $_POST['file_id'] ) ? intval( wp_unslash( $_POST['file_id'] ) ) : 0;
-		if ( $file_id <= 0 ) {
-			wp_send_json_error( esc_html__( 'Invalid item', 'linknacional-file-browser' ) );
-		}
-		LinkNacionalFilebrowserFiles::revoke_file_tokens( $file_id );
-		wp_send_json_success( array( 'message' => esc_html__( 'Share link revoked', 'linknacional-file-browser' ) ) );
-	}
 
 	/**
 	 * Return the items that belong to a collection: favorites | recent | trash.

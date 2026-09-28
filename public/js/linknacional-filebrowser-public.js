@@ -179,8 +179,8 @@
 		];
 		if (item.allow_download) {
 			actions.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
-			actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 		}
+		actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 		actions.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 		return actions;
 	}
@@ -305,13 +305,13 @@
 
 		// Read-only quick actions: the fullscreen viewer is always available.
 		var quick = [
-			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } },
-			{ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } }
+			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } }
 		];
 		if (item.allow_download) {
 			quick.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
-			quick.push({ label: t('copy_url', 'Copy URL'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 		}
+		quick.push({ label: t('copy_url', 'Copy URL'), icon: 'fas fa-link', run: function () { copyLink(item); } });
+		quick.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 		var $q = $('#lnfb-drawer-quick').empty();
 		quick.forEach(function (a) {
 			$('<button type="button" class="lnfb-quick-item">')
@@ -362,11 +362,12 @@
 
 	function copyLink(item) {
 		var done = function () { toast(t('link_copied', 'Link copied to clipboard'), 'success'); };
-		if (navigator.clipboard && navigator.clipboard.writeText) {
-			navigator.clipboard.writeText(item.url).then(done, function () { fallbackCopy(item.url, done); });
-		} else {
-			fallbackCopy(item.url, done);
-		}
+		// The shareable link is the token-protected viewer URL, never the
+		// internal proxy URL. Fall back to the proxy URL only if minting fails.
+		api('linknacional_frontend_share', { file_ids: String(item.id) }).then(function (response) {
+			var url = response && response.success && response.data && response.data.links ? response.data.links[item.id] : '';
+			copyText(url || item.url, done);
+		}, function () { copyText(item.url, done); });
 	}
 
 	function fallbackCopy(text, done) {
