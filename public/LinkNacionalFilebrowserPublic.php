@@ -313,6 +313,12 @@ class LinkNacionalFilebrowserPublic {
 			'type_video'          => esc_html__( 'Video', 'linknacional-file-browser' ),
 			'type_archive'        => esc_html__( 'Archive', 'linknacional-file-browser' ),
 			'type_file'           => esc_html__( 'File', 'linknacional-file-browser' ),
+			'copy_ai'             => esc_html__( 'Copy for AI', 'linknacional-file-browser' ),
+			'ai_copied'           => esc_html__( 'Copied for AI', 'linknacional-file-browser' ),
+			'ai_nothing'          => esc_html__( 'Nothing to copy', 'linknacional-file-browser' ),
+			'ai_title'            => esc_html__( 'File Browser', 'linknacional-file-browser' ),
+			'ai_url'              => esc_html__( 'URL', 'linknacional-file-browser' ),
+			'ai_description'      => esc_html__( 'Description', 'linknacional-file-browser' ),
 		));
 
 		$atts = shortcode_atts( array(
@@ -793,6 +799,53 @@ class LinkNacionalFilebrowserPublic {
 		$files = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE folder_id = %d AND is_trashed = 0 ORDER BY original_name ASC", $folder_id));
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		wp_send_json_success( LinkNacionalFilebrowserFiles::prepare_rows( $files ) );
+	}
+
+	/**
+	 * Issue temporary share links for files, for the frontend "Copy for AI".
+	 *
+	 * Mirrors the admin handler but is gated by the public nonce (this browser
+	 * is already public/read-only), returning { links: { id: viewer_url } }.
+	 */
+	public function share_files_frontend() {
+		check_ajax_referer( 'linknacional_filebrowser_public_nonce', 'nonce' );
+
+		$raw = isset( $_POST['file_ids'] ) ? wp_unslash( $_POST['file_ids'] ) : '';
+		$ids = array();
+		foreach ( explode( ',', (string) $raw ) as $part ) {
+			$part = intval( $part );
+			if ( $part > 0 ) {
+				$ids[] = $part;
+			}
+		}
+		$ids = array_values( array_unique( $ids ) );
+		if ( empty( $ids ) ) {
+			wp_send_json_error( esc_html__( 'No files selected', 'linknacional-file-browser' ) );
+		}
+
+		global $wpdb;
+		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT id FROM {$this->table_files()} WHERE id IN ($placeholders) AND is_trashed = 0",
+			$ids
+		) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$links = array();
+		foreach ( $rows as $row ) {
+			$token = LinkNacionalFilebrowserFiles::create_share_token( (int) $row->id );
+			if ( $token ) {
+				$links[ (int) $row->id ] = LinkNacionalFilebrowserFiles::viewer_url( (int) $row->id, $token );
+			}
+		}
+		if ( empty( $links ) ) {
+			wp_send_json_error( esc_html__( 'Could not create the link', 'linknacional-file-browser' ) );
+		}
+		wp_send_json_success( array(
+			'links'      => $links,
+			'expires_in' => LinkNacionalFilebrowserFiles::TOKEN_TTL,
+		) );
 	}
 
 	private function table_folders() {

@@ -1023,6 +1023,8 @@
 html.lnfb-viewer-open,
 body.lnfb-viewer-open { overflow: hidden !important; }
 body.lnfb-viewer-page { margin: 0; background: #0c0e12; }
+/* Standalone viewer page (no page behind it): no close button. */
+body.lnfb-viewer-standalone .lnfb-lb-close { display: none !important; }
 
 .lnfb-lightbox {
 	position: fixed;

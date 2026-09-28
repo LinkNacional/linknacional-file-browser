@@ -85,6 +85,10 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
 
+		// Frontend "Copy for AI" — issue temporary share links for files.
+		$this->loader->add_action( 'wp_ajax_linknacional_frontend_share', $plugin_public, 'share_files_frontend' );
+		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_frontend_share', $plugin_public, 'share_files_frontend' );
+
 		// File delivery endpoint — enforces the per-file download restriction for visitors.
 		$this->loader->add_action( 'wp_ajax_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );

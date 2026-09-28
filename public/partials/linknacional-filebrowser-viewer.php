@@ -21,7 +21,7 @@ if ( ! defined( 'WPINC' ) ) {
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex, nofollow">
 	<title><?php echo esc_html( $data['name'] ); ?></title>
-	<?php wp_print_styles( array( 'linknacional-filebrowser-fontawesome', 'linknacional-file-browser' ) ); ?>
+	<?php wp_print_styles( array( 'linknacional-file-browser' ) ); ?>
 </head>
 <body class="lnfb-viewer-page">
 	<div id="lnfb-viewer"
@@ -30,6 +30,6 @@ if ( ! defined( 'WPINC' ) ) {
 		data-size="<?php echo esc_attr( $data['size'] ); ?>"
 		data-allow-download="<?php echo esc_attr( $data['allow_download'] ? '1' : '0' ); ?>"
 		data-url="<?php echo esc_attr( $data['serve_url'] ); ?>"></div>
-	<?php wp_print_scripts( array( 'linknacional-file-browser' ) ); ?>
+	<?php wp_print_scripts( array( 'linknacional-filebrowser-fontawesome', 'linknacional-filebrowser-pdfjs', 'linknacional-file-browser' ) ); ?>
 </body>
 </html>

@@ -1139,9 +1139,8 @@
 			else if (active && e.key === '-') { zoomViewer(1 / 1.25); }
 			else if (active && e.key === '0') { viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0; refreshViewer(); }
 		});
-		$o.on('click', function (e) {
-			if (e.target === this || $(e.target).hasClass('lnfb-lightbox-stage')) { closeViewer(); }
-		});
+		// Clicking the backdrop no longer closes the viewer — only the close
+		// button (or Esc) does, so a stray click outside the image is harmless.
 		// Deter saving locked content: block the context menu and drag-out on
 		// the rendered image/canvas (best-effort — not a real barrier).
 		$o.on('contextmenu', '.lnfb-lightbox-img, .lnfb-lightbox-canvas', function (e) {

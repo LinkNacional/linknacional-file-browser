@@ -169,7 +169,8 @@
 	function buildActions(item) {
 		if (item.type === 'folder') {
 			return [
-				{ label: t('open_file', 'Open'), icon: 'fas fa-folder-open', run: function () { navigateTo(item.id); } }
+				{ label: t('open_file', 'Open'), icon: 'fas fa-folder-open', run: function () { navigateTo(item.id); } },
+				{ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } }
 			];
 		}
 		var actions = [
@@ -180,6 +181,7 @@
 			actions.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
 			actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 		}
+		actions.push({ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } });
 		return actions;
 	}
 
@@ -303,7 +305,8 @@
 
 		// Read-only quick actions: the fullscreen viewer is always available.
 		var quick = [
-			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } }
+			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } },
+			{ label: t('copy_ai', 'Copy for AI'), icon: 'fas fa-robot', run: function () { copyForAI(item); } }
 		];
 		if (item.allow_download) {
 			quick.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
@@ -375,10 +378,128 @@
 	}
 
 	/* ------------------------------------------------------------------ *
+	 *  Copy for AI (Markdown export for LLMs)
+	 * ------------------------------------------------------------------ */
+
+	function copyText(text, done) {
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+		} else {
+			fallbackCopy(text, done);
+		}
+	}
+
+	function mdEscape(text) {
+		return String(text == null ? '' : text).replace(/[\\[\]]/g, '\\$&');
+	}
+
+	function mdLink(text, url) {
+		return '[' + mdEscape(text) + '](' + String(url == null ? '' : url).replace(/\)/g, '%29') + ')';
+	}
+
+	function folderNameOf(id) {
+		var hit = (state.folders || []).filter(function (x) { return Number(x.id) === Number(id); })[0];
+		return hit ? hit.name : '';
+	}
+
+	function descriptionOf(id) {
+		var hit = (state.files || []).filter(function (x) { return Number(x.id) === Number(id); })[0];
+		return hit ? hit.description : '';
+	}
+
+	function groupBy(list, key, sortKey) {
+		var out = {};
+		list.forEach(function (item) {
+			var k = Number(item[key]) || 0;
+			(out[k] = out[k] || []).push(item);
+		});
+		Object.keys(out).forEach(function (k) {
+			out[k].sort(function (a, b) { return String(a[sortKey]).localeCompare(String(b[sortKey])); });
+		});
+		return out;
+	}
+
+	function appendFolderMarkdown(out, byParent, byFolder, folderId, level, urlMap) {
+		var heading = new Array(Math.min(level, 6) + 1).join('#');
+		(byFolder[Number(folderId)] || []).forEach(function (f) {
+			out.push('- ' + mdLink(f.original_name, urlMap[Number(f.id)] || f.file_url) + ' (' + formatSize(f.file_size) + ')');
+		});
+		(byParent[Number(folderId)] || []).forEach(function (sf) {
+			out.push('');
+			out.push(heading + ' ' + mdEscape(sf.name));
+			out.push('');
+			appendFolderMarkdown(out, byParent, byFolder, sf.id, level + 1, urlMap);
+		});
+	}
+
+	function buildFileMarkdown(item, urlMap) {
+		var name = item.name || item.original_name || '';
+		var ext = (item.filetype || extOf(name) || '').toLowerCase();
+		var size = item.size !== undefined ? item.size : item.file_size;
+		var url = (urlMap && urlMap[Number(item.id)]) || item.url || item.file_url || '';
+		var folder = item.folder_name || folderNameOf(item.folder_id);
+		var lines = ['# ' + mdEscape(name), ''];
+		lines.push('- **' + t('detail_type', 'Type') + ':** ' + (ext ? ext.toUpperCase() + ' (' + typeCategory(ext) + ')' : typeCategory('')));
+		lines.push('- **' + t('detail_size', 'Size') + ':** ' + formatSize(size));
+		var date = formatDate(item.updated_at || item.created_at);
+		if (date) { lines.push('- **' + t('detail_modified', 'Modified') + ':** ' + date); }
+		if (url) { lines.push('- **' + t('ai_url', 'URL') + ':** ' + url); }
+		if (folder) { lines.push('- **' + t('folder_text', 'Folder') + ':** ' + folder); }
+		var desc = item.description || descriptionOf(item.id);
+		if (desc) { lines.push('- **' + t('ai_description', 'Description') + ':** ' + String(desc).replace(/\s+/g, ' ').trim()); }
+		return lines.join('\n');
+	}
+
+	function buildFolderMarkdown(folder, urlMap) {
+		var byParent = groupBy(state.folders || [], 'parent_id', 'name');
+		var byFolder = groupBy(state.files || [], 'folder_id', 'original_name');
+		var out = ['# ' + mdEscape(folder ? folder.name : t('ai_title', 'File Browser')), ''];
+		appendFolderMarkdown(out, byParent, byFolder, folder ? folder.id : 0, 2, urlMap);
+		return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+	}
+
+	function buildAIMarkdown(item, urlMap) {
+		if (item && item.type === 'file') { return buildFileMarkdown(item, urlMap); }
+		return buildFolderMarkdown(item && item.type === 'folder' ? item : null, urlMap);
+	}
+
+	/** File ids included in a copy: the file itself, or a folder's whole subtree. */
+	function collectFileIds(item) {
+		if (item && item.type === 'file') { return [Number(item.id)]; }
+		var rootId = item && item.type === 'folder' ? Number(item.id) : 0;
+		var byParent = groupBy(state.folders || [], 'parent_id', 'name');
+		var scope = {};
+		(function walk(id) {
+			scope[id] = true;
+			(byParent[id] || []).forEach(function (sf) { walk(Number(sf.id)); });
+		})(rootId);
+		return (state.files || [])
+			.filter(function (f) { return scope[Number(f.folder_id)]; })
+			.map(function (f) { return Number(f.id); });
+	}
+
+	function copyForAI(item) {
+		var ids = collectFileIds(item).filter(function (n) { return n > 0; });
+		if (!ids.length) { toast(t('ai_nothing', 'Nothing to copy'), 'error'); return; }
+
+		var done = function () { toast(t('ai_copied', 'Copied for AI'), 'success'); };
+		var copy = function (urlMap) {
+			var text = buildAIMarkdown(item, urlMap || {});
+			if (!text) { toast(t('ai_nothing', 'Nothing to copy'), 'error'); return; }
+			copyText(text, done);
+		};
+
+		// Each file gets a temporary share link so the LLM can reach it.
+		api('linknacional_frontend_share', { file_ids: ids.join(',') }).then(function (response) {
+			copy(response && response.success && response.data ? response.data.links : {});
+		}, function () { copy({}); });
+	}
+
+	/* ------------------------------------------------------------------ *
 	 *  Fullscreen viewer (lightbox)
 	 * ------------------------------------------------------------------ */
 
-	var viewer = { item: null, mode: 'none', page: 0, pages: 1, fit: true, scale: 1, tx: 0, ty: 0, dragging: false, sx: 0, sy: 0, pdfDoc: null, renderSeq: 0, renderTask: null, closeTimer: null, locked: false, imgEl: null };
+	var viewer = { item: null, mode: 'none', page: 0, pages: 1, fit: true, scale: 1, tx: 0, ty: 0, dragging: false, sx: 0, sy: 0, pdfDoc: null, renderSeq: 0, renderTask: null, closeTimer: null, locked: false, imgEl: null, standalone: false };
 
 	var OFFICE_EXT = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf'];
 	var TEXT_EXT = ['txt', 'csv', 'md', 'markdown', 'json', 'log', 'xml', 'yaml', 'yml', 'ini', 'html', 'css', 'js'];
@@ -470,9 +591,8 @@
 			else if (active && e.key === '-') { zoomViewer(1 / 1.25); }
 			else if (active && e.key === '0') { viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0; refreshViewer(); }
 		});
-		$o.on('click', function (e) {
-			if (e.target === this || $(e.target).hasClass('lnfb-lightbox-stage')) { closeViewer(); }
-		});
+		// Clicking the backdrop no longer closes the viewer — only the close
+		// button (or Esc) does, so a stray click outside the image is harmless.
 		// Deter saving locked content: block the context menu and drag-out on
 		// the rendered image/canvas (best-effort — not a real barrier).
 		$o.on('contextmenu', '.lnfb-lightbox-img, .lnfb-lightbox-canvas', function (e) {
@@ -773,6 +893,7 @@
 	}
 
 	function closeViewer() {
+		if (viewer.standalone) { return; }
 		var $o = $('#lnfb-viewer-overlay');
 		$o.removeClass('is-open');
 		$('html, body').removeClass('lnfb-viewer-open lnfb-lb-dragging');
@@ -1205,9 +1326,12 @@
 
 	$(function () {
 
-		/* Standalone viewer page: open the lightbox immediately and stop. */
+		/* Standalone viewer page: open the lightbox immediately and stop. There is
+		   no page behind it, so the close button/Esc are disabled. */
 		var $viewerPage = $('#lnfb-viewer');
 		if ($viewerPage.length && !$('.linknacional-filebrowser-public').length) {
+			viewer.standalone = true;
+			$('body').addClass('lnfb-viewer-standalone');
 			openViewer({
 				type: 'file',
 				id: 0,
