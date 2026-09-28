@@ -22,6 +22,7 @@ class LinkNacionalFilebrowserAdmin {
 			return;
 		}
 		wp_enqueue_script( 'linknacional-filebrowser-fontawesome', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/fontawesome.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
+		wp_enqueue_script( 'linknacional-filebrowser-pdfjs', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdfjs.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
 		wp_enqueue_style( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'admin/css/linknacional-filebrowser-admin.css', array(), LINKNACIONAL_FILEBROWSER_VERSION, 'all' );
 	}
 
@@ -32,6 +33,7 @@ class LinkNacionalFilebrowserAdmin {
 		wp_enqueue_script( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'admin/js/linknacional-filebrowser-admin.js', array( 'jquery' ), LINKNACIONAL_FILEBROWSER_VERSION, false );
 		wp_localize_script( $this->plugin_name, 'linknacional_ajax', array(
 			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			'pdfjs_worker'      => LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdf.worker.min.js',
 			'home'              => esc_html__( 'Home', 'linknacional-file-browser' ),
 			'folder_text'       => esc_html__( 'Folder', 'linknacional-file-browser' ),
 			'items_text'        => esc_html__( 'items', 'linknacional-file-browser' ),
@@ -132,7 +134,6 @@ class LinkNacionalFilebrowserAdmin {
 			'favorite_off'      => esc_html__( 'Removed from favorites', 'linknacional-file-browser' ),
 			'add_favorite'      => esc_html__( 'Add to favorites', 'linknacional-file-browser' ),
 			'remove_favorite'   => esc_html__( 'Remove from favorites', 'linknacional-file-browser' ),
-			'open_new_tab'      => esc_html__( 'Open in new tab', 'linknacional-file-browser' ),
 			'copy_to'           => esc_html__( 'Copy to…', 'linknacional-file-browser' ),
 			'copied_ok'         => esc_html__( 'Copied', 'linknacional-file-browser' ),
 			'copy_error'        => esc_html__( 'Could not copy the item', 'linknacional-file-browser' ),
@@ -158,6 +159,18 @@ class LinkNacionalFilebrowserAdmin {
 			'allow_download'    => esc_html__( 'Allow download', 'linknacional-file-browser' ),
 			'download_locked'   => esc_html__( 'Download restricted', 'linknacional-file-browser' ),
 			'download_unlocked' => esc_html__( 'Download allowed', 'linknacional-file-browser' ),
+			'preview_unavailable' => esc_html__( 'Preview unavailable', 'linknacional-file-browser' ),
+			'view'              => esc_html__( 'View', 'linknacional-file-browser' ),
+			'zoom_in'           => esc_html__( 'Zoom in', 'linknacional-file-browser' ),
+			'zoom_out'          => esc_html__( 'Zoom out', 'linknacional-file-browser' ),
+			'zoom_fit'          => esc_html__( 'Fit to screen', 'linknacional-file-browser' ),
+			'prev_page'         => esc_html__( 'Previous page', 'linknacional-file-browser' ),
+			'next_page'         => esc_html__( 'Next page', 'linknacional-file-browser' ),
+			'share'             => esc_html__( 'Share', 'linknacional-file-browser' ),
+			'revoke_share'      => esc_html__( 'Revoke share link', 'linknacional-file-browser' ),
+			'share_link_copied' => esc_html__( 'Share link copied (valid for 1 hour)', 'linknacional-file-browser' ),
+			'share_stopped'     => esc_html__( 'Share link revoked', 'linknacional-file-browser' ),
+			'share_error'       => esc_html__( 'Could not create the link', 'linknacional-file-browser' ),
 		));
 	}
 
@@ -295,7 +308,7 @@ class LinkNacionalFilebrowserAdmin {
 			wp_send_json_error(esc_html__('No files uploaded', 'linknacional-file-browser'));
 		}
 		$upload_dir = wp_upload_dir();
-		$filebrowser_dir = $upload_dir['basedir'] . '/linknacional-filebrowser';
+		$filebrowser_dir = LinkNacionalFilebrowserFiles::storage_dir();
 		$filebrowser_url = $upload_dir['baseurl'] . '/linknacional-filebrowser';
 
 		if ( ! file_exists( $filebrowser_dir ) ) {
@@ -357,7 +370,6 @@ class LinkNacionalFilebrowserAdmin {
 				$filename  = basename( $movefile['file'] );
 				$file_path = $movefile['file'];
 			}
-			$file_url = $filebrowser_url . '/' . $filename;
 			$file_ext = pathinfo( $filename, PATHINFO_EXTENSION );
 
 			// Keep display names unique within the folder: "logo.png", "logo (1).png", …
@@ -373,7 +385,7 @@ class LinkNacionalFilebrowserAdmin {
 					'file_type'     => $file_ext,
 					'file_size'     => $file_size,
 					'file_path'     => $file_path,
-					'file_url'      => $file_url,
+					'file_url'      => '',
 				),
 				array( '%s', '%s', '%d', '%s', '%d', '%s', '%s' )
 			);
@@ -491,6 +503,71 @@ class LinkNacionalFilebrowserAdmin {
 				? esc_html__( 'Download allowed', 'linknacional-file-browser' )
 				: esc_html__( 'Download restricted', 'linknacional-file-browser' ),
 		) );
+	}
+
+	/**
+	 * Issue temporary share links (token-protected viewer URLs) for files.
+	 *
+	 * Accepts a comma-separated list of file ids and returns { links: { id: url } }.
+	 */
+	public function share_files_ajax() {
+		check_ajax_referer( 'linknacional_filebrowser_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
+		}
+
+		$raw = isset( $_POST['file_ids'] ) ? wp_unslash( $_POST['file_ids'] ) : '';
+		$ids = array();
+		foreach ( explode( ',', (string) $raw ) as $part ) {
+			$part = intval( $part );
+			if ( $part > 0 ) {
+				$ids[] = $part;
+			}
+		}
+		$ids = array_values( array_unique( $ids ) );
+		if ( empty( $ids ) ) {
+			wp_send_json_error( esc_html__( 'No files selected', 'linknacional-file-browser' ) );
+		}
+
+		global $wpdb;
+		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT id FROM {$this->table_files()} WHERE id IN ($placeholders) AND is_trashed = 0",
+			$ids
+		) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$links = array();
+		foreach ( $rows as $row ) {
+			$token = LinkNacionalFilebrowserFiles::create_share_token( (int) $row->id );
+			if ( $token ) {
+				$links[ (int) $row->id ] = LinkNacionalFilebrowserFiles::viewer_url( (int) $row->id, $token );
+			}
+		}
+		if ( empty( $links ) ) {
+			wp_send_json_error( esc_html__( 'Could not create the link', 'linknacional-file-browser' ) );
+		}
+		wp_send_json_success( array(
+			'links'      => $links,
+			'expires_in' => LinkNacionalFilebrowserFiles::TOKEN_TTL,
+		) );
+	}
+
+	/**
+	 * Revoke every active share link issued for a file.
+	 */
+	public function revoke_share_ajax() {
+		check_ajax_referer( 'linknacional_filebrowser_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
+		}
+		$file_id = isset( $_POST['file_id'] ) ? intval( wp_unslash( $_POST['file_id'] ) ) : 0;
+		if ( $file_id <= 0 ) {
+			wp_send_json_error( esc_html__( 'Invalid item', 'linknacional-file-browser' ) );
+		}
+		LinkNacionalFilebrowserFiles::revoke_file_tokens( $file_id );
+		wp_send_json_success( array( 'message' => esc_html__( 'Share link revoked', 'linknacional-file-browser' ) ) );
 	}
 
 	/**
@@ -669,8 +746,7 @@ class LinkNacionalFilebrowserAdmin {
 		}
 		$new_name = $this->unique_file_name_in_folder( $file->original_name, $target_folder_id );
 		$upload   = wp_upload_dir();
-		$dir      = $upload['basedir'] . '/linknacional-filebrowser';
-		$url      = $upload['baseurl'] . '/linknacional-filebrowser';
+		$dir      = LinkNacionalFilebrowserFiles::storage_dir();
 
 		$stored   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $new_name, PATHINFO_EXTENSION ), $dir );
 
@@ -691,7 +767,7 @@ class LinkNacionalFilebrowserAdmin {
 				'file_type'     => $file->file_type,
 				'file_size'     => $file->file_size,
 				'file_path'     => $dest_path,
-				'file_url'      => $url . '/' . $stored,
+				'file_url'      => '',
 			),
 			array( '%s', '%s', '%d', '%s', '%d', '%s', '%s' )
 		);
@@ -1311,9 +1387,8 @@ class LinkNacionalFilebrowserAdmin {
 
 		$upload_dir       = wp_upload_dir();
 		$old_dir          = $upload_dir['basedir'] . '/lknwp-filebrowser';
-		$new_dir          = $upload_dir['basedir'] . '/linknacional-filebrowser';
+		$new_dir          = LinkNacionalFilebrowserFiles::storage_dir();
 		$old_url          = $upload_dir['baseurl'] . '/lknwp-filebrowser';
-		$new_url          = $upload_dir['baseurl'] . '/linknacional-filebrowser';
 
 		if ( ! file_exists( $new_dir ) ) {
 			wp_mkdir_p( $new_dir );
@@ -1397,7 +1472,6 @@ class LinkNacionalFilebrowserAdmin {
 
 				$stored_name   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $unique_name, PATHINFO_EXTENSION ), $new_dir );
 				$new_file_path = $new_dir . '/' . $stored_name;
-				$new_file_url  = $new_url . '/' . $stored_name;
 
 				// Copy physical file
 				$old_file_path = $old_dir . '/' . $file->name;
@@ -1414,7 +1488,7 @@ class LinkNacionalFilebrowserAdmin {
 						'file_type'     => $file->file_type,
 						'file_size'     => $file->file_size,
 						'file_path'     => $new_file_path,
-						'file_url'      => $new_file_url,
+						'file_url'      => '',
 					),
 					array( '%s', '%s', '%d', '%s', '%d', '%s', '%s' )
 				);

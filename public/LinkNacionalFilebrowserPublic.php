@@ -32,15 +32,25 @@ class LinkNacionalFilebrowserPublic {
 	}
 
 	/**
-	 * Stream a stored file through PHP, enforcing the per-file download flag.
+	 * File delivery endpoint.
+	 *
+	 * Modes: `info` (JSON capability probe), `pdf` (PDF/Office-PDF rendition for
+	 * the client-side PDF.js viewer), `image` (view-only image), `text`
+	 * (plain-text body), and the default raw stream. The download is the only
+	 * action gated by `allow_download`.
 	 */
 	public function serve_file_ajax() {
-		check_ajax_referer( LinkNacionalFilebrowserFiles::NONCE_ACTION, 'nonce' );
-
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$file_id  = isset( $_GET['file_id'] ) ? intval( wp_unslash( $_GET['file_id'] ) ) : 0;
+		$mode     = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : '';
+		$token    = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+		$nonce    = isset( $_GET['nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['nonce'] ) ) : '';
 		$download = isset( $_GET['dl'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $this->authorize_file_request( $file_id, $token, $nonce ) ) {
+			wp_die( esc_html__( 'Download restricted', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
+		}
 
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -50,29 +60,187 @@ class LinkNacionalFilebrowserPublic {
 			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
 		}
 
-		// Restricted files stay reachable for managers; visitors are blocked.
-		if ( empty( $file->allow_download ) && ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Download restricted', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
+		$path = $file->file_path;
+		if ( ! $path || ! file_exists( $path ) || ! LinkNacionalFilebrowserFiles::is_within_storage_dir( $path ) ) {
+			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
 		}
 
-		$path = $file->file_path;
-		if ( ! $path || ! file_exists( $path ) || ! LinkNacionalFilebrowserFiles::is_within_upload_dir( $path ) ) {
-			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
+		$ext = strtolower( (string) $file->file_type );
+
+		// Capability probe for the viewer.
+		if ( 'info' === $mode ) {
+			$kind     = LinkNacionalFilebrowserFiles::preview_kind( $ext );
+			$viewable = in_array( $kind, array( 'image', 'pdf', 'text' ), true )
+				|| ( 'office' === $kind && false !== LinkNacionalFilebrowserFiles::converted_pdf( $path, $ext ) );
+			wp_send_json_success(
+				array(
+					'kind'           => $kind,
+					'viewable'       => $viewable,
+					'allow_download' => (int) $file->allow_download,
+				)
+			);
+		}
+
+		// PDF rendition for the client-side PDF.js viewer: PDFs are served as-is,
+		// Office documents as their cached LibreOffice→PDF conversion.
+		if ( 'pdf' === $mode ) {
+			$pdf = ( 'pdf' === $ext ) ? $path : LinkNacionalFilebrowserFiles::converted_pdf( $path, $ext );
+			if ( ! $pdf ) {
+				wp_die( esc_html__( 'Preview unavailable', 'linknacional-file-browser' ), '', array( 'response' => 415 ) );
+			}
+			$this->stream_file( $pdf, 'application/pdf', 'inline', $file->original_name );
+		}
+
+		// Image rendition for the viewer (view-only, no download attachment).
+		if ( 'image' === $mode ) {
+			if ( 'image' !== LinkNacionalFilebrowserFiles::preview_kind( $ext ) ) {
+				wp_die( esc_html__( 'Preview unavailable', 'linknacional-file-browser' ), '', array( 'response' => 415 ) );
+			}
+			$type = wp_check_filetype( $file->original_name );
+			$mime = ! empty( $type['type'] ) ? $type['type'] : 'application/octet-stream';
+			$this->stream_file( $path, $mime, 'inline', $file->original_name );
+		}
+
+		// Plain-text body for the viewer.
+		if ( 'text' === $mode ) {
+			if ( ! LinkNacionalFilebrowserFiles::is_text( $ext ) ) {
+				wp_die( esc_html__( 'Preview unavailable', 'linknacional-file-browser' ), '', array( 'response' => 415 ) );
+			}
+			$this->stream_file( $path, 'text/plain; charset=UTF-8', 'inline', $file->original_name );
+		}
+
+		// Raw stream — the download path. A restricted file is never streamed.
+		if ( empty( $file->allow_download ) ) {
+			wp_die( esc_html__( 'Download restricted', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
 		}
 
 		$type = wp_check_filetype( $file->original_name );
 		$mime = ! empty( $type['type'] ) ? $type['type'] : 'application/octet-stream';
+		$this->stream_file( $path, $mime, $download ? 'attachment' : 'inline', $file->original_name );
+	}
 
+	/**
+	 * Stream a file to the browser and stop.
+	 *
+	 * @param string $path        Absolute path.
+	 * @param string $mime        Content type.
+	 * @param string $disposition 'inline' or 'attachment'.
+	 * @param string $name        Download file name.
+	 * @return void
+	 */
+	private function stream_file( $path, $mime, $disposition, $name ) {
 		while ( ob_get_level() > 0 ) {
 			ob_end_clean();
 		}
 		nocache_headers();
 		header( 'Content-Type: ' . $mime );
 		header( 'Content-Length: ' . filesize( $path ) );
-		header( 'Content-Disposition: ' . ( $download ? 'attachment' : 'inline' ) . '; filename="' . rawurlencode( $file->original_name ) . '"' );
+		header( 'Content-Disposition: ' . $disposition . '; filename="' . rawurlencode( $name ) . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
 		readfile( $path );
 		exit;
+	}
+
+	/**
+	 * Whether the request may read the given file — via a session nonce or a
+	 * valid, unexpired share token bound to that same file.
+	 *
+	 * @param int    $file_id
+	 * @param string $token
+	 * @param string $nonce
+	 * @return bool
+	 */
+	private function authorize_file_request( $file_id, $token, $nonce ) {
+		if ( '' !== $token ) {
+			return $file_id > 0 && LinkNacionalFilebrowserFiles::validate_share_token( $token ) === (int) $file_id;
+		}
+		if ( '' !== $nonce ) {
+			return (bool) wp_verify_nonce( $nonce, LinkNacionalFilebrowserFiles::NONCE_ACTION );
+		}
+		return false;
+	}
+
+	/**
+	 * Register the standalone viewer query var.
+	 *
+	 * @param array $vars
+	 * @return array
+	 */
+	public function register_viewer_query_vars( $vars ) {
+		$vars[] = 'linknacional_viewer';
+		return $vars;
+	}
+
+	/**
+	 * Render the standalone viewer page for a token-protected file.
+	 *
+	 * The page mounts the fullscreen viewer regardless of the download flag —
+	 * the flag only controls whether the download button is offered.
+	 */
+	public function render_viewer_page() {
+		$file_id = (int) get_query_var( 'linknacional_viewer' );
+		if ( $file_id <= 0 ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+		if ( LinkNacionalFilebrowserFiles::validate_share_token( $token ) !== $file_id ) {
+			wp_die( esc_html__( 'This link is invalid or has expired.', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
+		}
+
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
+		if ( ! $file || (int) $file->is_trashed === 1 ) {
+			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
+		}
+
+		$path = $file->file_path;
+		if ( ! $path || ! file_exists( $path ) || ! LinkNacionalFilebrowserFiles::is_within_storage_dir( $path ) ) {
+			wp_die( esc_html__( 'File not found', 'linknacional-file-browser' ), '', array( 'response' => 404 ) );
+		}
+
+		$data = array(
+			'name'           => $file->original_name,
+			'ext'            => strtolower( (string) $file->file_type ),
+			'allow_download' => ! empty( $file->allow_download ),
+			'serve_url'      => LinkNacionalFilebrowserFiles::token_serve_url( $file_id, $token ),
+			'size'           => (int) $file->file_size,
+		);
+
+		wp_enqueue_script( 'linknacional-filebrowser-fontawesome', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/fontawesome.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
+		wp_enqueue_style( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'public/css/linknacional-filebrowser-public.css', array(), LINKNACIONAL_FILEBROWSER_VERSION, 'all' );
+		wp_enqueue_script( 'linknacional-filebrowser-pdfjs', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdfjs.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
+		wp_enqueue_script( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'public/js/linknacional-filebrowser-public.js', array( 'jquery' ), LINKNACIONAL_FILEBROWSER_VERSION, false );
+		wp_localize_script( $this->plugin_name, 'linknacional_public_ajax', $this->viewer_strings() );
+
+		require LINKNACIONAL_FILEBROWSER_PLUGIN_PATH . 'public/partials/linknacional-filebrowser-viewer.php';
+		exit;
+	}
+
+	/**
+	 * Translated strings needed by the standalone viewer page.
+	 *
+	 * @return array
+	 */
+	private function viewer_strings() {
+		return array(
+			'pdfjs_worker'        => LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdf.worker.min.js',
+			'close'               => esc_html__( 'Close', 'linknacional-file-browser' ),
+			'download'            => esc_html__( 'Download', 'linknacional-file-browser' ),
+			'download_locked'     => esc_html__( 'Download restricted', 'linknacional-file-browser' ),
+			'preview_unavailable' => esc_html__( 'Preview unavailable', 'linknacional-file-browser' ),
+			'view'                => esc_html__( 'View', 'linknacional-file-browser' ),
+			'zoom_in'             => esc_html__( 'Zoom in', 'linknacional-file-browser' ),
+			'zoom_out'            => esc_html__( 'Zoom out', 'linknacional-file-browser' ),
+			'zoom_fit'            => esc_html__( 'Fit to screen', 'linknacional-file-browser' ),
+			'prev_page'           => esc_html__( 'Previous page', 'linknacional-file-browser' ),
+			'next_page'           => esc_html__( 'Next page', 'linknacional-file-browser' ),
+			'type_image'          => esc_html__( 'Image', 'linknacional-file-browser' ),
+			'type_pdf'            => esc_html__( 'PDF', 'linknacional-file-browser' ),
+			'type_file'           => esc_html__( 'File', 'linknacional-file-browser' ),
+		);
 	}
 
 	public function register_shortcode() {
@@ -82,10 +250,12 @@ class LinkNacionalFilebrowserPublic {
 	public function render_filebrowser_shortcode( $atts ) {
 		wp_enqueue_script( 'linknacional-filebrowser-fontawesome', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/fontawesome.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
 		wp_enqueue_style( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'public/css/linknacional-filebrowser-public.css', array(), LINKNACIONAL_FILEBROWSER_VERSION, 'all' );
+		wp_enqueue_script( 'linknacional-filebrowser-pdfjs', LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdfjs.compiled.js', array(), LINKNACIONAL_FILEBROWSER_VERSION, false );
 		wp_enqueue_script( $this->plugin_name, LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'public/js/linknacional-filebrowser-public.js', array( 'jquery' ), LINKNACIONAL_FILEBROWSER_VERSION, false );
 
 		wp_localize_script( $this->plugin_name, 'linknacional_public_ajax', array(
 			'ajax_url'            => admin_url( 'admin-ajax.php' ),
+			'pdfjs_worker'        => LINKNACIONAL_FILEBROWSER_PLUGIN_URL . 'assets/js/compiled/pdf.worker.min.js',
 			'home'                => esc_html__( 'Home', 'linknacional-file-browser' ),
 			'folder_text'         => esc_html__( 'Folder', 'linknacional-file-browser' ),
 			'searching_text'      => esc_html__( 'Searching…', 'linknacional-file-browser' ),
@@ -100,9 +270,15 @@ class LinkNacionalFilebrowserPublic {
 			'found_items_text'    => esc_html__( 'Found', 'linknacional-file-browser' ),
 			'items_text'          => esc_html__( 'items', 'linknacional-file-browser' ),
 			'open_file'           => esc_html__( 'Open', 'linknacional-file-browser' ),
-			'open_new_tab'        => esc_html__( 'Open in new tab', 'linknacional-file-browser' ),
 			'download'            => esc_html__( 'Download', 'linknacional-file-browser' ),
 			'download_locked'      => esc_html__( 'Download restricted', 'linknacional-file-browser' ),
+			'preview_unavailable'  => esc_html__( 'Preview unavailable', 'linknacional-file-browser' ),
+			'prev_page'           => esc_html__( 'Previous page', 'linknacional-file-browser' ),
+			'next_page'           => esc_html__( 'Next page', 'linknacional-file-browser' ),
+			'view'                => esc_html__( 'View', 'linknacional-file-browser' ),
+			'zoom_in'             => esc_html__( 'Zoom in', 'linknacional-file-browser' ),
+			'zoom_out'            => esc_html__( 'Zoom out', 'linknacional-file-browser' ),
+			'zoom_fit'            => esc_html__( 'Fit to screen', 'linknacional-file-browser' ),
 			'preview'             => esc_html__( 'Preview', 'linknacional-file-browser' ),
 			'copy_link'           => esc_html__( 'Copy link', 'linknacional-file-browser' ),
 			'more_actions'        => esc_html__( 'More actions', 'linknacional-file-browser' ),

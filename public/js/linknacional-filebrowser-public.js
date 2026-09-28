@@ -173,12 +173,12 @@
 			];
 		}
 		var actions = [
-			{ label: t('preview', 'Preview'), icon: 'fas fa-eye', run: function () { openDrawer(item); } }
+			{ label: t('preview', 'Preview'), icon: 'fas fa-eye', run: function () { openDrawer(item); } },
+			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } }
 		];
 		if (item.allow_download) {
 			actions.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
 			actions.push({ label: t('copy_link', 'Copy link'), icon: 'fas fa-link', run: function () { copyLink(item); } });
-			actions.push({ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } });
 		}
 		return actions;
 	}
@@ -224,6 +224,48 @@
 		});
 	}
 
+	function nopreviewHtml(ext) {
+		return '<div class="lnfb-drawer-nopreview"><i class="' + typeIcon(ext) + '"></i></div>';
+	}
+	function setupDrawerPreview($p, item, ext) {
+		// Only images render inline; every other type (PDF included) shows the
+		// type icon and is opened in the fullscreen viewer instead.
+		if (!item.url || IMG_EXT.indexOf(ext) === -1) {
+			$p.append(nopreviewHtml(ext));
+			return;
+		}
+		// Locked images are drawn to a canvas so there's no saveable <img> in the
+		// DOM (best-effort; same rationale as the fullscreen viewer).
+		if (Number(item.allow_download) === 0) {
+			var $c = $('<canvas class="lnfb-drawer-preview-img" role="img">').attr('aria-label', item.name);
+			$p.addClass('is-preview').append($c);
+			var probe = new Image();
+			probe.onload = function () {
+				var cv = $c[0];
+				if (!cv || state.drawerItem !== item) { return; }
+				cv.width = probe.naturalWidth;
+				cv.height = probe.naturalHeight;
+				cv.getContext('2d').drawImage(probe, 0, 0);
+				sizeDrawerToContent();
+			};
+			probe.onerror = function () {
+				if (state.drawerItem !== item) { return; }
+				$p.removeClass('is-preview').empty().append(nopreviewHtml(ext));
+			};
+			probe.src = withParam(item.url, 'mode=image');
+			return;
+		}
+		$p.addClass('is-preview').append(
+			$('<img class="lnfb-drawer-preview-img">')
+				.attr('alt', item.name)
+				.attr('src', withParam(item.url, 'mode=image'))
+				.on('error', function () {
+					if (state.drawerItem !== item) { return; }
+					$p.removeClass('is-preview').empty().append(nopreviewHtml(ext));
+				})
+		);
+	}
+
 	function openDrawer(item) {
 		ensureDrawer();
 		bindDrawerEvents();
@@ -235,18 +277,14 @@
 		var meta = [formatSize(item.size), ext ? ext.toUpperCase() : '', formatDate(item.updated_at || item.created_at)].filter(Boolean);
 		$('#lnfb-drawer-meta').text(meta.join(' - '));
 
-		var $p = $('#lnfb-drawer-preview').empty();
-		var isImg = IMG_EXT.indexOf(ext) !== -1 && item.url && item.allow_download;
-		$p.toggleClass('is-image', isImg);
-		if (isImg) {
-			$p.append($('<img>').attr('src', item.url).attr('alt', item.name));
-		} else {
-			// PDFs and text files are not embedded (mini viewer looks odd) — show just the icon.
-			$p.append('<div class="lnfb-drawer-nopreview"><i class="' + typeIcon(ext) + '"></i></div>');
-		}
+		var $p = $('#lnfb-drawer-preview').empty().removeClass('is-preview');
+		setupDrawerPreview($p, item, ext);
 		// Read-only favourite indicator (public never toggles favourites).
 		if (Number(item.is_favorite)) {
 			$p.append('<span class="lnfb-fav-badge" title="' + esc(t('col_favorites', 'Favorites')) + '"><i class="fas fa-star"></i></span>');
+		}
+		if (item.type === 'file' && Number(item.allow_download) === 0) {
+			$p.append('<span class="lnfb-drawer-lock" title="' + esc(t('download_locked', 'Download restricted')) + '"><i class="fas fa-lock"></i></span>');
 		}
 
 		var typeLabel = ext ? ext.toUpperCase() + ' (' + typeCategory(ext) + ')' : typeCategory('');
@@ -263,10 +301,11 @@
 		});
 		$('#lnfb-drawer-details').html(details);
 
-		// Public is read-only: quick actions only, hidden when download is restricted.
-		var quick = [];
+		// Read-only quick actions: the fullscreen viewer is always available.
+		var quick = [
+			{ label: t('view', 'View'), icon: 'fas fa-expand', run: function () { openViewer(item); } }
+		];
 		if (item.allow_download) {
-			quick.push({ label: t('open_new_tab', 'Open in new tab'), icon: 'fas fa-arrow-up-right-from-square', run: function () { window.open(item.url, '_blank', 'noopener'); } });
 			quick.push({ label: t('download', 'Download'), icon: 'fas fa-download', run: function () { downloadFile(item); } });
 			quick.push({ label: t('copy_url', 'Copy URL'), icon: 'fas fa-link', run: function () { copyLink(item); } });
 		}
@@ -333,6 +372,423 @@
 		try { document.execCommand('copy'); done(); }
 		catch (err) { window.prompt(t('copied_fallback', 'Copy this link:'), text); }
 		$tmp.remove();
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  Fullscreen viewer (lightbox)
+	 * ------------------------------------------------------------------ */
+
+	var viewer = { item: null, mode: 'none', page: 0, pages: 1, fit: true, scale: 1, tx: 0, ty: 0, dragging: false, sx: 0, sy: 0, pdfDoc: null, renderSeq: 0, renderTask: null, closeTimer: null, locked: false, imgEl: null };
+
+	var OFFICE_EXT = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf'];
+	var TEXT_EXT = ['txt', 'csv', 'md', 'markdown', 'json', 'log', 'xml', 'yaml', 'yml', 'ini', 'html', 'css', 'js'];
+
+	function withParam(url, param) { return url + (url.indexOf('?') === -1 ? '?' : '&') + param; }
+
+	function clientKind(ext) {
+		if (IMG_EXT.indexOf(ext) !== -1) { return 'image'; }
+		if (ext === 'pdf') { return 'pdf'; }
+		if (OFFICE_EXT.indexOf(ext) !== -1) { return 'office'; }
+		if (TEXT_EXT.indexOf(ext) !== -1) { return 'text'; }
+		return 'none';
+	}
+
+	function ensureViewer() {
+		if ($('#lnfb-viewer-overlay').length) { return; }
+		$('body').append(
+			'<div class="lnfb-lightbox" id="lnfb-viewer-overlay" hidden>'
+			+ '<div class="lnfb-lightbox-bar">'
+			+ '<span class="lnfb-lightbox-title" id="lnfb-lightbox-title"></span>'
+			+ '<div class="lnfb-lightbox-tools">'
+			+ '<span class="lnfb-lb-pagegroup" id="lnfb-lb-pagegroup" hidden>'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-prev" aria-label="' + esc(t('prev_page', 'Previous page')) + '"><i class="fas fa-chevron-left"></i></button>'
+			+ '<span class="lnfb-lb-count" id="lnfb-lb-count"></span>'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-next" aria-label="' + esc(t('next_page', 'Next page')) + '"><i class="fas fa-chevron-right"></i></button>'
+			+ '</span>'
+			+ '<span class="lnfb-lb-zoomgroup" id="lnfb-lb-zoomgroup" hidden>'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-out" aria-label="' + esc(t('zoom_out', 'Zoom out')) + '"><i class="fas fa-magnifying-glass-minus"></i></button>'
+			+ '<input type="text" class="lnfb-lb-zoom" id="lnfb-lb-zoom" inputmode="numeric" autocomplete="off" value="100" aria-label="' + esc(t('zoom_in', 'Zoom')) + '" title="' + esc(t('zoom_in', 'Zoom')) + '">'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-in" aria-label="' + esc(t('zoom_in', 'Zoom in')) + '"><i class="fas fa-magnifying-glass-plus"></i></button>'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-fit" aria-label="' + esc(t('zoom_fit', 'Fit to screen')) + '"><i class="fas fa-expand"></i></button>'
+			+ '</span>'
+			+ '<a class="lnfb-lb-btn lnfb-lb-dl" hidden><i class="fas fa-download"></i></a>'
+			+ '<button type="button" class="lnfb-lb-btn lnfb-lb-close" aria-label="' + esc(t('close', 'Close')) + '"><i class="fas fa-xmark"></i></button>'
+			+ '</div>'
+			+ '</div>'
+			+ '<div class="lnfb-lightbox-stage" id="lnfb-lightbox-stage">'
+			+ '<img class="lnfb-lightbox-img" id="lnfb-lightbox-img" alt="" draggable="false" hidden>'
+			+ '<canvas class="lnfb-lightbox-canvas" id="lnfb-lightbox-canvas" hidden></canvas>'
+			+ '<pre class="lnfb-lightbox-text" id="lnfb-lightbox-text" hidden></pre>'
+			+ '<div class="lnfb-lightbox-loading" id="lnfb-lightbox-loading" hidden><i class="fas fa-spinner fa-spin"></i></div>'
+			+ '<div class="lnfb-lightbox-nopreview" id="lnfb-lightbox-nopreview" hidden><i class="fas fa-file"></i><p></p></div>'
+			+ '</div>'
+			+ '</div>'
+		);
+		bindViewerEvents();
+	}
+
+	function bindViewerEvents() {
+		var $o = $('#lnfb-viewer-overlay');
+		$o.on('click', '.lnfb-lb-close', closeViewer);
+		$o.on('click', '.lnfb-lb-prev', function () { if (viewer.page > 0) { viewer.page--; loadViewerPage(); } });
+		$o.on('click', '.lnfb-lb-next', function () { if (viewer.page < viewer.pages - 1) { viewer.page++; loadViewerPage(); } });
+		$o.on('click', '.lnfb-lb-in', function () { zoomViewer(1.25); });
+		$o.on('click', '.lnfb-lb-out', function () { zoomViewer(1 / 1.25); });
+		$o.on('click', '.lnfb-lb-fit', function () { viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0; refreshViewer(); });
+		$o.on('focus', '#lnfb-lb-zoom', function () { $(this).select(); });
+		$o.on('keydown', '#lnfb-lb-zoom', function (e) {
+			if (e.key === 'Enter') { e.preventDefault(); $(this).blur(); }
+			else if (e.key === 'Escape') { e.preventDefault(); updZoomLabel(); $(this).blur(); }
+			e.stopPropagation();
+		});
+		$o.on('blur', '#lnfb-lb-zoom', applyZoomInput);
+		$o.on('mousedown', '.lnfb-lightbox-img, .lnfb-lightbox-canvas', function (e) {
+			if (viewer.fit) { return; }
+			viewer.dragging = true;
+			viewer.sx = e.clientX - viewer.tx;
+			viewer.sy = e.clientY - viewer.ty;
+			$('body').addClass('lnfb-lb-dragging');
+			e.preventDefault();
+		});
+		$(document).on('mousemove', function (e) {
+			if (!viewer.dragging) { return; }
+			viewer.tx = e.clientX - viewer.sx;
+			viewer.ty = e.clientY - viewer.sy;
+			applyViewerTransform();
+		});
+		$(document).on('mouseup', function () {
+			if (viewer.dragging) { viewer.dragging = false; $('body').removeClass('lnfb-lb-dragging'); }
+		});
+		$(document).on('keydown', function (e) {
+			if (!$o.hasClass('is-open')) { return; }
+			if ($(e.target).is('input, textarea')) { return; }
+			var active = !$('#lnfb-lightbox-img').prop('hidden') || !$('#lnfb-lightbox-canvas').prop('hidden');
+			if (e.key === 'Escape') { closeViewer(); }
+			else if (active && e.key === 'ArrowLeft' && viewer.page > 0) { viewer.page--; loadViewerPage(); }
+			else if (active && e.key === 'ArrowRight' && viewer.page < viewer.pages - 1) { viewer.page++; loadViewerPage(); }
+			else if (active && (e.key === '+' || e.key === '=')) { zoomViewer(1.25); }
+			else if (active && e.key === '-') { zoomViewer(1 / 1.25); }
+			else if (active && e.key === '0') { viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0; refreshViewer(); }
+		});
+		$o.on('click', function (e) {
+			if (e.target === this || $(e.target).hasClass('lnfb-lightbox-stage')) { closeViewer(); }
+		});
+		// Deter saving locked content: block the context menu and drag-out on
+		// the rendered image/canvas (best-effort — not a real barrier).
+		$o.on('contextmenu', '.lnfb-lightbox-img, .lnfb-lightbox-canvas', function (e) {
+			if (viewer.locked) { e.preventDefault(); }
+		});
+		$o.on('dragstart', '.lnfb-lightbox-img, .lnfb-lightbox-canvas', function (e) {
+			if (viewer.locked) { e.preventDefault(); }
+		});
+	}
+
+	function openViewer(item) {
+		ensureViewer();
+		var ext = String(item.filetype || extOf(item.name) || '').toLowerCase();
+		if (viewer.closeTimer) { window.clearTimeout(viewer.closeTimer); viewer.closeTimer = null; }
+		if (viewer.pdfDoc) { try { viewer.pdfDoc.destroy(); } catch (err) {} viewer.pdfDoc = null; }
+		viewer.item = item;
+		viewer.mode = 'none';
+		viewer.page = 0;
+		viewer.pages = 1;
+		viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0;
+
+		$('#lnfb-lightbox-title').text(item.name);
+		var $dl = $('#lnfb-viewer-overlay .lnfb-lb-dl');
+		if (item.allow_download && item.url) {
+			$dl.attr('href', withParam(item.url, 'dl=1')).attr('download', item.name).prop('hidden', false);
+		} else {
+			$dl.prop('hidden', true);
+		}
+
+		// When the download is restricted, deter "Save image as" / drag-out.
+		viewer.locked = item.type === 'file' && Number(item.allow_download) === 0;
+		$('#lnfb-viewer-overlay').toggleClass('is-locked', viewer.locked);
+
+		resetViewerStage();
+		applyViewerTransform();
+		updViewerNav();
+
+		var $o = $('#lnfb-viewer-overlay');
+		$o.prop('hidden', false);
+		$('html, body').addClass('lnfb-viewer-open');
+		window.requestAnimationFrame(function () { $o.addClass('is-open'); });
+
+		renderViewerPreview(item, ext);
+	}
+
+	function resetViewerStage() {
+		// Detach handlers first: clearing the src fires a spurious `error` that
+		// would otherwise trip the previous file's error handler.
+		$('#lnfb-lightbox-img').off('load error').attr('src', '').prop('hidden', true);
+		$('#lnfb-lightbox-canvas').prop('hidden', true);
+		$('#lnfb-lightbox-text').prop('hidden', true).text('');
+		$('#lnfb-lightbox-nopreview').prop('hidden', true);
+		$('#lnfb-lb-zoomgroup').prop('hidden', true);
+		$('#lnfb-lb-pagegroup').prop('hidden', true);
+		$('#lnfb-lb-zoom').val(100);
+		viewer.imgEl = null;
+		showViewerLoading();
+	}
+
+	function showViewerLoading() { $('#lnfb-lightbox-loading').prop('hidden', false); }
+	function hideViewerLoading() { $('#lnfb-lightbox-loading').prop('hidden', true); }
+	function bindViewerImg($img) {
+		$img.off('load error')
+			.on('load', function () {
+				hideViewerLoading();
+				$('#lnfb-lightbox-nopreview').prop('hidden', true);
+			})
+			.on('error', function () { showViewerNopreview(''); });
+	}
+
+	function renderViewerPreview(item, ext) {
+		if (!item.url) { showViewerNopreview(ext); return; }
+		var kind = clientKind(ext);
+
+		if (kind === 'image') {
+			showViewerImage(withParam(item.url, 'mode=image'));
+			return;
+		}
+		if (kind === 'none') { showViewerNopreview(ext); return; }
+
+		// pdf / office / text — ask the server what it can render.
+		$.ajax({ url: withParam(item.url, 'mode=info'), dataType: 'json' }).then(function (res) {
+			if (viewer.item !== item) { return; }
+			var data = res && res.success ? res.data : {};
+			var serverKind = data.kind || kind;
+			if (!data.viewable) { showViewerNopreview(ext); return; }
+			if (serverKind === 'pdf' || serverKind === 'office') {
+				loadPdfViewer(item, ext);
+			} else if (serverKind === 'text') {
+				showViewerText(item, ext);
+			} else if (serverKind === 'image') {
+				showViewerImage(withParam(item.url, 'mode=image'));
+			} else {
+				showViewerNopreview(ext);
+			}
+		}, function () { if (viewer.item === item) { showViewerNopreview(ext); } });
+	}
+
+	/* PDF rendering via PDF.js: rasterised on a canvas at the exact zoom scale,
+	   so text stays crisp at any magnification (no fixed-DPI bitmaps). */
+	function loadPdfViewer(item, ext) {
+		var lib = window.pdfjsLib;
+		if (!lib || !lib.getDocument) { showViewerNopreview(ext); return; }
+		if (L.pdfjs_worker) { lib.GlobalWorkerOptions.workerSrc = L.pdfjs_worker; }
+		viewer.mode = 'pdf';
+		lib.getDocument({ url: withParam(item.url, 'mode=pdf') }).promise.then(function (doc) {
+			viewer.pdfDoc = doc;
+			viewer.pages = Math.max(1, doc.numPages);
+			viewer.page = 0;
+			viewer.fit = true; viewer.scale = 1; viewer.tx = 0; viewer.ty = 0;
+			$('#lnfb-lb-zoomgroup').prop('hidden', false);
+			updViewerNav();
+			renderPdfPage();
+		}, function () { showViewerNopreview(ext); });
+	}
+
+	function pdfPageElement() { return document.getElementById('lnfb-lightbox-canvas'); }
+
+	function renderPdfPage() {
+		if (!viewer.pdfDoc) { return; }
+		var seq = ++viewer.renderSeq;
+		if (viewer.renderTask) { try { viewer.renderTask.cancel(); } catch (err) {} viewer.renderTask = null; }
+		showViewerLoading();
+		viewer.pdfDoc.getPage(viewer.page + 1).then(function (page) {
+			if (seq !== viewer.renderSeq) { return; }
+			var base = page.getViewport({ scale: 1 });
+			var stage = document.getElementById('lnfb-lightbox-stage');
+			var availW = Math.max(160, stage.clientWidth - 40);
+			var availH = Math.max(160, stage.clientHeight - 40);
+			var fitScale = Math.min(availW / base.width, availH / base.height);
+			var scale = fitScale * (viewer.fit ? 1 : viewer.scale);
+			var dpr = window.devicePixelRatio || 1;
+			var vp = page.getViewport({ scale: scale * dpr });
+			var canvas = pdfPageElement();
+			canvas.width = Math.floor(vp.width);
+			canvas.height = Math.floor(vp.height);
+			canvas.style.width = Math.floor(vp.width / dpr) + 'px';
+			canvas.style.height = Math.floor(vp.height / dpr) + 'px';
+			canvas.hidden = false;
+			$('#lnfb-lightbox-img').prop('hidden', true);
+			applyViewerTransform();
+			var ctx = canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			var task = page.render({ canvasContext: ctx, viewport: vp });
+			viewer.renderTask = task;
+			task.promise.then(function () {
+				if (seq !== viewer.renderSeq) { return; }
+				hideViewerLoading();
+				$('#lnfb-lightbox-nopreview').prop('hidden', true);
+			}, function (err) {
+				if (err && err.name === 'RenderingCancelledException') { return; }
+				if (seq === viewer.renderSeq) { showViewerNopreview(''); }
+			});
+		}, function () { if (seq === viewer.renderSeq) { showViewerNopreview(''); } });
+	}
+
+	function loadViewerPage() {
+		if (viewer.mode === 'pdf') { renderPdfPage(); updViewerNav(); return; }
+		if (viewer.mode === 'imagecanvas') { renderImageCanvas(); updViewerNav(); return; }
+		var $img = $('#lnfb-lightbox-img');
+		bindViewerImg($img);
+		showViewerLoading();
+		$img.prop('hidden', false).attr('src', withParam(viewer.item.url, 'mode=image'));
+		updViewerNav();
+	}
+
+	function updViewerNav() {
+		var $o = $('#lnfb-viewer-overlay');
+		$o.find('#lnfb-lb-count').text((viewer.page + 1) + ' / ' + viewer.pages);
+		$o.find('.lnfb-lb-prev').prop('disabled', viewer.page <= 0);
+		$o.find('.lnfb-lb-next').prop('disabled', viewer.page >= viewer.pages - 1);
+		$('#lnfb-lb-pagegroup').prop('hidden', viewer.pages <= 1);
+	}
+
+	function showViewerImage(src) {
+		viewer.mode = 'image';
+		$('#lnfb-lb-zoomgroup').prop('hidden', false);
+		// Locked images are drawn onto a canvas (like PDFs): no image element in
+		// the DOM, so no "Save image as" and no draggable source. Quality is kept
+		// (full resolution scaled to the zoom). Best-effort deterrence only.
+		if (viewer.locked) {
+			viewer.mode = 'imagecanvas';
+			showViewerLoading();
+			var seq = ++viewer.renderSeq;
+			var probe = new Image();
+			probe.onload = function () {
+				if (seq !== viewer.renderSeq || viewer.mode !== 'imagecanvas') { return; }
+				viewer.imgEl = probe;
+				renderImageCanvas();
+			};
+			probe.onerror = function () {
+				if (seq !== viewer.renderSeq) { return; }
+				showViewerNopreview('');
+			};
+			probe.src = src;
+			return;
+		}
+		var $img = $('#lnfb-lightbox-img');
+		bindViewerImg($img);
+		showViewerLoading();
+		$img.prop('hidden', false).attr('src', src);
+	}
+
+	function renderImageCanvas() {
+		var img = viewer.imgEl;
+		if (!img || !img.naturalWidth) { return; }
+		var stage = document.getElementById('lnfb-lightbox-stage');
+		var availW = Math.max(160, stage.clientWidth - 40);
+		var availH = Math.max(160, stage.clientHeight - 40);
+		var fitScale = Math.min(availW / img.naturalWidth, availH / img.naturalHeight);
+		var scale = fitScale * (viewer.fit ? 1 : viewer.scale);
+		var dpr = window.devicePixelRatio || 1;
+		var canvas = pdfPageElement();
+		canvas.width = Math.max(1, Math.floor(img.naturalWidth * scale * dpr));
+		canvas.height = Math.max(1, Math.floor(img.naturalHeight * scale * dpr));
+		canvas.style.width = Math.floor(img.naturalWidth * scale) + 'px';
+		canvas.style.height = Math.floor(img.naturalHeight * scale) + 'px';
+		canvas.hidden = false;
+		$('#lnfb-lightbox-img').prop('hidden', true);
+		applyViewerTransform();
+		var ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+		hideViewerLoading();
+		$('#lnfb-lightbox-nopreview').prop('hidden', true);
+	}
+
+	function showViewerText(item, ext) {
+		viewer.mode = 'text';
+		$.ajax({ url: withParam(item.url, 'mode=text'), dataType: 'text' }).then(function (text) {
+			hideViewerLoading();
+			$('#lnfb-lightbox-text').text(String(text || '')).prop('hidden', false);
+		}, function () { showViewerNopreview(ext); });
+	}
+
+	function showViewerNopreview(ext) {
+		hideViewerLoading();
+		$('#lnfb-lightbox-img').prop('hidden', true);
+		$('#lnfb-lightbox-canvas').prop('hidden', true);
+		$('#lnfb-lightbox-text').prop('hidden', true);
+		var $np = $('#lnfb-lightbox-nopreview');
+		$np.find('i').attr('class', ext ? typeIcon(ext) : 'fas fa-file');
+		$np.find('p').text(t('preview_unavailable', 'Preview unavailable'));
+		$np.prop('hidden', false);
+		$('#lnfb-lb-zoomgroup').prop('hidden', true);
+		$('#lnfb-lb-pagegroup').prop('hidden', true);
+	}
+
+	function refreshViewer() {
+		if (viewer.mode === 'pdf') { renderPdfPage(); }
+		else if (viewer.mode === 'imagecanvas') { renderImageCanvas(); }
+		else { applyViewerTransform(); }
+		$('#lnfb-lb-zoom').val(viewer.fit ? 100 : Math.round(viewer.scale * 100));
+	}
+
+	/* Editable zoom percentage: type a number, press Enter/blur to apply. */
+	function applyZoomInput() {
+		var $i = $('#lnfb-lb-zoom');
+		var pct = parseInt(String($i.val()).replace(/[^\d]/g, ''), 10);
+		if (isNaN(pct) || pct <= 0) { updZoomLabel(); return; }
+		pct = Math.max(10, Math.min(800, pct));
+		viewer.fit = false;
+		viewer.scale = pct / 100;
+		viewer.tx = 0; viewer.ty = 0;
+		refreshViewer();
+	}
+
+	function updZoomLabel() {
+		if (viewer.mode === 'pdf' || viewer.mode === 'image' || viewer.mode === 'imagecanvas') {
+			$('#lnfb-lb-zoom').val(viewer.fit ? 100 : Math.round(viewer.scale * 100));
+		}
+	}
+
+	function zoomViewer(factor) {
+		viewer.fit = false;
+		viewer.scale = Math.min(8, Math.max(0.2, viewer.scale * factor));
+		refreshViewer();
+	}
+
+	function applyViewerTransform() {
+		// Canvas content (PDF pages / locked images) is re-rendered at scale
+		// (crisp); only pan via translate.
+		if (viewer.mode === 'pdf' || viewer.mode === 'imagecanvas') {
+			var canvas = pdfPageElement();
+			if (canvas) {
+				canvas.style.transform = (viewer.tx || viewer.ty)
+					? 'translate(' + viewer.tx + 'px,' + viewer.ty + 'px)'
+					: 'none';
+			}
+			return;
+		}
+		var $img = $('#lnfb-lightbox-img');
+		if (viewer.fit) {
+			$img.css('transform', 'none');
+			return;
+		}
+		$img.css('transform', 'translate(' + viewer.tx + 'px,' + viewer.ty + 'px) scale(' + viewer.scale + ')');
+	}
+
+	function closeViewer() {
+		var $o = $('#lnfb-viewer-overlay');
+		$o.removeClass('is-open');
+		$('html, body').removeClass('lnfb-viewer-open lnfb-lb-dragging');
+		if (viewer.renderTask) { try { viewer.renderTask.cancel(); } catch (err) {} viewer.renderTask = null; }
+		viewer.renderSeq++;
+		if (viewer.closeTimer) { window.clearTimeout(viewer.closeTimer); }
+		viewer.closeTimer = window.setTimeout(function () {
+			viewer.closeTimer = null;
+			$o.prop('hidden', true);
+			$('#lnfb-lightbox-img').attr('src', '');
+			$('#lnfb-lightbox-canvas').prop('hidden', true);
+		}, 200);
+		if (viewer.pdfDoc) { try { viewer.pdfDoc.destroy(); } catch (err) {} viewer.pdfDoc = null; }
+		viewer.imgEl = null;
+		viewer.mode = 'none';
+		viewer.item = null;
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -748,6 +1204,21 @@
 	 * ------------------------------------------------------------------ */
 
 	$(function () {
+
+		/* Standalone viewer page: open the lightbox immediately and stop. */
+		var $viewerPage = $('#lnfb-viewer');
+		if ($viewerPage.length && !$('.linknacional-filebrowser-public').length) {
+			openViewer({
+				type: 'file',
+				id: 0,
+				name: String($viewerPage.attr('data-name') || ''),
+				url: String($viewerPage.attr('data-url') || ''),
+				filetype: String($viewerPage.attr('data-filetype') || ''),
+				size: Number($viewerPage.attr('data-size')) || 0,
+				allow_download: Number($viewerPage.attr('data-allow-download')) === 0 ? 0 : 1
+			});
+			return;
+		}
 
 		ensureDrawer();
 

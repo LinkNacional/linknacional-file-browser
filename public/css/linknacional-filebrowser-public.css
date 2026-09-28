@@ -941,30 +941,31 @@
 	overflow: hidden;
 }
 .lnfb-drawer-preview img { display: block; width: 100%; max-height: 340px; object-fit: contain; }
-/* Image previews sit in a centred square frame; width follows the drawer (up to a cap). */
-/* Image previews fill the drawer width and stay square, capped at 100%. */
-.lnfb-drawer-preview.is-image {
-	width: 100%;
-	max-width: 100%;
-	aspect-ratio: 1 / 1;
-	min-height: 0;
-	margin: 0 auto 18px;
-}
-.lnfb-drawer-preview.is-image img {
-	display: block;
-	width: 100%;
-	height: 100%;
-	max-height: 100%;
-	object-fit: contain;
-}
 .lnfb-drawer-nopreview { padding: 48px 20px; text-align: center; }
 .lnfb-drawer-nopreview i { display: block; font-size: 64px; color: var(--lnfb-primary); }
 
-@media (max-width: 1024px) {
-	.lnfb-drawer-preview.is-image { max-width: 100%; }
-}
-@media (max-width: 782px) {
-	.lnfb-drawer-preview.is-image { max-width: 100%; }
+/* Rasterised preview (PDF first page / image) inside the drawer. */
+.linknacional-filebrowser-public .lnfb-drawer-preview.is-preview { display: block; padding: 0; background: #eceff1; }
+.linknacional-filebrowser-public .lnfb-drawer-preview-img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: contain; background: #fff; }
+
+/* Lock indicator shown over the preview when the file's download is restricted. */
+.linknacional-filebrowser-public .lnfb-drawer-lock {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, .92);
+	color: var(--lnfb-primary);
+	font-size: 15px;
+	line-height: 1;
+	box-shadow: var(--lnfb-shadow);
+	pointer-events: none;
 }
 
 .lnfb-drawer-block { margin-bottom: 18px; }
@@ -1017,3 +1018,155 @@
 	.linknacional-filebrowser-public .lnfb-drawer-scroll { overflow-y: auto; }
 }
 
+
+/* ==================== Fullscreen viewer (lightbox) ==================== */
+html.lnfb-viewer-open,
+body.lnfb-viewer-open { overflow: hidden !important; }
+body.lnfb-viewer-page { margin: 0; background: #0c0e12; }
+
+.lnfb-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 200000;
+	display: flex;
+	flex-direction: column;
+	background: rgba(12, 14, 18, .94);
+	opacity: 0;
+	transition: opacity .2s ease;
+}
+.lnfb-lightbox[hidden] { display: none; }
+.lnfb-lightbox.is-open { opacity: 1; }
+.lnfb-lightbox [hidden] { display: none !important; }
+
+.lnfb-lightbox .lnfb-lightbox-bar {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 12px !important;
+	min-height: 54px !important;
+	padding: 10px 14px !important;
+	box-sizing: border-box !important;
+	color: #f0f0f1 !important;
+	background: rgba(0, 0, 0, .35) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+.lnfb-lightbox .lnfb-lightbox-title {
+	flex: 1 1 auto !important;
+	min-width: 0 !important;
+	margin: 0 !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	line-height: 1.2 !important;
+	color: #f0f0f1 !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+}
+.lnfb-lightbox .lnfb-lightbox-tools { display: flex !important; align-items: center !important; gap: 6px !important; }
+.lnfb-lightbox .lnfb-lb-zoomgroup,
+.lnfb-lightbox .lnfb-lb-pagegroup { display: inline-flex !important; align-items: center !important; gap: 6px !important; }
+.lnfb-lightbox .lnfb-lb-pagegroup { margin-right: 6px !important; }
+
+/* One fixed height + font-size for every toolbar control so a theme can never
+   make some bigger or smaller. Scoped under .lnfb-lightbox and forced. */
+.lnfb-lightbox .lnfb-lb-btn,
+.lnfb-lightbox .lnfb-lb-zoom,
+.lnfb-lightbox .lnfb-lb-count {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	box-sizing: border-box !important;
+	height: 34px !important;
+	min-height: 34px !important;
+	max-height: 34px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 none !important;
+	border-radius: 8px !important;
+	background: rgba(255, 255, 255, .08) !important;
+	color: #f0f0f1 !important;
+	font-family: inherit !important;
+	font-size: 15px !important;
+	font-weight: 400 !important;
+	line-height: 1 !important;
+	font-style: normal !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	text-transform: none !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+	vertical-align: middle !important;
+}
+.lnfb-lightbox .lnfb-lb-btn { width: 34px !important; min-width: 34px !important; }
+.lnfb-lightbox .lnfb-lb-zoom { width: 56px !important; min-width: 56px !important; padding: 0 4px !important; font-weight: 600 !important; }
+.lnfb-lightbox .lnfb-lb-count { min-width: 56px !important; padding: 0 4px !important; background: transparent !important; color: #d0d0d0 !important; cursor: default !important; }
+.lnfb-lightbox .lnfb-lb-btn:hover { background: rgba(255, 255, 255, .18) !important; color: #f0f0f1 !important; }
+.lnfb-lightbox .lnfb-lb-btn:disabled { opacity: .35 !important; cursor: default !important; }
+.lnfb-lightbox .lnfb-lb-zoom:focus { background: rgba(255, 255, 255, .2) !important; outline: none !important; box-shadow: 0 0 0 2px rgba(255, 255, 255, .4) !important; }
+
+.lnfb-lightbox-stage {
+	flex: 1;
+	display: flex;
+	min-height: 0;
+	overflow: auto;
+	padding: 16px;
+}
+/* margin:auto centres the content and still lets the stage scroll when the
+   page/canvas is larger than the viewport (works with flex + overflow). */
+.lnfb-lightbox-stage > * { margin: auto; }
+.lnfb-lightbox-img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	background: #fff;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+	transform-origin: center center;
+	user-select: none;
+	cursor: zoom-in;
+}
+body.lnfb-lb-dragging .lnfb-lightbox-img { cursor: grabbing; }
+/* Locked content: deter drag-out / long-press save (best-effort, not a barrier). */
+.lnfb-lightbox.is-locked .lnfb-lightbox-img,
+.lnfb-lightbox.is-locked .lnfb-lightbox-canvas {
+	-webkit-user-drag: none;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	pointer-events: auto;
+}
+.lnfb-lightbox-canvas {
+	background: #fff;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+	transform-origin: center center;
+	user-select: none;
+	cursor: grab;
+}
+body.lnfb-lb-dragging .lnfb-lightbox-canvas { cursor: grabbing; }
+.lnfb-lightbox-text {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 18px 22px;
+	overflow: auto;
+	background: #fff;
+	color: #1d2327;
+	border-radius: 4px;
+	font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	white-space: pre-wrap;
+	word-break: break-word;
+	text-align: left;
+}
+.lnfb-lightbox-nopreview { text-align: center; color: #9ca3af; }
+.lnfb-lightbox-loading { text-align: center; color: #c9ced6; }
+.lnfb-lightbox-loading i { font-size: 40px; }
+.lnfb-lightbox-nopreview i { display: block; font-size: 72px; margin-bottom: 12px; }
+.lnfb-lightbox-nopreview p { margin: 0; font-size: 14px; }
+
+@media (max-width: 782px) {
+	.lnfb-lightbox .lnfb-lightbox-title { display: none !important; }
+	.lnfb-lightbox .lnfb-lb-zoomgroup { gap: 4px !important; }
+}

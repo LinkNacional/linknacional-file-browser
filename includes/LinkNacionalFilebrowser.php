@@ -64,6 +64,8 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_get_admin_nonce', $plugin_admin, 'linknacional_get_admin_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_get_admin_nonce', $plugin_admin, 'linknacional_get_admin_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_migrate', $plugin_admin, 'migrate_ajax' );
+		$this->loader->add_action( 'wp_ajax_linknacional_share_files', $plugin_admin, 'share_files_ajax' );
+		$this->loader->add_action( 'wp_ajax_linknacional_revoke_share', $plugin_admin, 'revoke_share_ajax' );
 	}
 
 	private function define_public_hooks() {
@@ -86,6 +88,10 @@ class LinkNacionalFilebrowser {
 		// File delivery endpoint — enforces the per-file download restriction for visitors.
 		$this->loader->add_action( 'wp_ajax_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
+
+		// Standalone viewer page for token-protected share links.
+		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_viewer_query_vars' );
+		$this->loader->add_action( 'template_redirect', $plugin_public, 'render_viewer_page' );
 
 		// Prevent LiteSpeed Cache from combining/minifying FontAwesome bundle
 		$this->loader->add_filter( 'script_loader_tag', $this, 'add_no_optimize_attr', 10, 3 );
