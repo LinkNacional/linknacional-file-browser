@@ -1396,10 +1396,13 @@
 .lkn-fb-fav-btn:hover { color: #dba617; transform: scale(1.08); }
 .lkn-fb-fav-btn.is-fav { color: #dba617; background: #fff8e1; }
 
-/* On grid/list cards: smaller, revealed on hover, always shown when favourited. */
+/* On grid/list cards: smaller, revealed on hover, always shown when favourited.
+   Anchored to the bottom corners of the thumbnail (not the card) so they never
+   overlap the file name/meta below. */
 .lkn-fb-item .lkn-fb-fav-btn {
-	right: 6px;
-	bottom: 6px;
+	top: 66px;
+	right: 18px;
+	bottom: auto;
 	width: 26px;
 	height: 26px;
 	font-size: 13px;
@@ -1437,6 +1440,12 @@
 }
 .lkn-fb-lock-btn:hover { color: var(--lkn-fb-primary); transform: scale(1.08); }
 .lkn-fb-lock-btn.is-locked { opacity: 1; color: #d63638; background: #fdecea; }
+/* On cards, sit inside the thumbnail's bottom-left corner (above the data). */
+.lkn-fb-item .lkn-fb-lock-btn {
+	top: 66px;
+	left: 18px;
+	bottom: auto;
+}
 .lkn-fb-item:hover .lkn-fb-lock-btn,
 .lkn-fb-item.is-selected .lkn-fb-lock-btn { opacity: 1; }
 .lkn-fb-contents.is-list .lkn-fb-item .lkn-fb-lock-btn { position: static; order: 1; background: transparent; box-shadow: none; }

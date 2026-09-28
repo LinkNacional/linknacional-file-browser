@@ -833,10 +833,12 @@
 	z-index: 3;
 }
 
-/* On grid/list cards the favourite star is a small indicator, bottom-right. */
+/* On grid/list cards the favourite star is a small indicator inside the
+   thumbnail's bottom-right corner (never over the file data below). */
 .linknacional-filebrowser-public .lnfb-item .lnfb-fav-badge {
-	right: 6px;
-	bottom: 6px;
+	top: 66px;
+	right: 18px;
+	bottom: auto;
 	width: 26px;
 	height: 26px;
 	font-size: 12px;
@@ -848,11 +850,13 @@
 	box-shadow: none;
 }
 
-/* Lock badge: marks a file whose download is restricted for visitors. */
+/* Lock badge: marks a file whose download is restricted for visitors.
+   Sits inside the thumbnail's bottom-left corner (above the data). */
 .linknacional-filebrowser-public .lnfb-lock-badge {
 	position: absolute;
-	left: 8px;
-	bottom: 8px;
+	top: 66px;
+	left: 18px;
+	bottom: auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
