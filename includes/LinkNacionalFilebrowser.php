@@ -33,8 +33,9 @@ class LinkNacionalFilebrowser {
 
 	private function define_core_hooks() {
 		$this->loader->add_action( 'plugins_loaded', LinkNacionalFilebrowserActivator::class, 'maybe_upgrade' );
-		// Daily cleanup of expired/revoked share tokens.
+		// Daily cleanup of expired/revoked share tokens and orphaned previews.
 		$this->loader->add_action( LinkNacionalFilebrowserFiles::CLEANUP_HOOK, LinkNacionalFilebrowserFiles::class, 'purge_expired_tokens' );
+		$this->loader->add_action( LinkNacionalFilebrowserFiles::CLEANUP_HOOK, LinkNacionalFilebrowserFiles::class, 'sweep_orphan_previews' );
 	}
 
 	private function define_admin_hooks() {

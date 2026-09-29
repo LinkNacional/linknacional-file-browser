@@ -434,7 +434,8 @@ class LinkNacionalFilebrowserAdmin {
 		$file = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id));
 		if ($file) {
 			if ( file_exists( $file->file_path ) ) {
-				wp_delete_file( $file->file_path );
+				LinkNacionalFilebrowserFiles::delete_preview( $file->file_path );
+				wp_delete_file_from_directory( $file->file_path, LinkNacionalFilebrowserFiles::storage_dir() );
 			}
 			$wpdb->delete($this->table_files(), array('id' => $file_id), array('%d'));
 		}
@@ -799,7 +800,8 @@ class LinkNacionalFilebrowserAdmin {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
 		if ( $file && file_exists( $file->file_path ) ) {
-			wp_delete_file( $file->file_path );
+			LinkNacionalFilebrowserFiles::delete_preview( $file->file_path );
+			wp_delete_file_from_directory( $file->file_path, LinkNacionalFilebrowserFiles::storage_dir() );
 		}
 		$wpdb->delete( $this->table_files(), array( 'id' => $file_id ), array( '%d' ) );
 	}
@@ -991,7 +993,8 @@ class LinkNacionalFilebrowserAdmin {
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		foreach ($files as $file) {
 			if ( file_exists( $file->file_path ) ) {
-				wp_delete_file( $file->file_path );
+				LinkNacionalFilebrowserFiles::delete_preview( $file->file_path );
+				wp_delete_file_from_directory( $file->file_path, LinkNacionalFilebrowserFiles::storage_dir() );
 			}
 		}
 		$wpdb->delete($this->table_files(), array('folder_id' => $folder_id), array('%d'));

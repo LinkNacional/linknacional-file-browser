@@ -421,10 +421,8 @@ class LinkNacionalFilebrowserFiles {
 		if ( ! self::ensure_dir( $cache ) ) {
 			return null;
 		}
-		$mtime = @filemtime( $path );
-		$size  = @filesize( $path );
-		$key   = md5( wp_normalize_path( $path ) . '|' . $mtime . '|' . $size );
-		$out   = $cache . '/' . $key . '.pdf';
+		$key = self::preview_key( $path );
+		$out = $cache . '/' . $key . '.pdf';
 		if ( \file_exists( $out ) ) {
 			return $out;
 		}
@@ -497,6 +495,82 @@ class LinkNacionalFilebrowserFiles {
 		@flock( $lock, LOCK_UN );
 		@fclose( $lock );
 		return $result;
+	}
+
+	/**
+	 * Cache key for a source file's converted preview.
+	 *
+	 * The key folds in mtime and size so an edited file maps to a fresh entry
+	 * instead of serving a stale conversion.
+	 *
+	 * @param string $path Absolute source path.
+	 * @return string
+	 */
+	public static function preview_key( $path ) {
+		$mtime = @filemtime( $path );
+		$size  = @filesize( $path );
+		return md5( wp_normalize_path( $path ) . '|' . $mtime . '|' . $size );
+	}
+
+	/**
+	 * Drop the cached preview (and its lock) for a source file.
+	 *
+	 * Must be called while the source still exists — the key depends on its
+	 * mtime/size — i.e. before the physical file is removed.
+	 *
+	 * @param string $path Absolute source path.
+	 * @return void
+	 */
+	public static function delete_preview( $path ) {
+		if ( ! $path ) {
+			return;
+		}
+		$cache = self::cache_dir();
+		$key   = self::preview_key( $path );
+		wp_delete_file_from_directory( $cache . '/' . $key . '.pdf', $cache );
+		wp_delete_file_from_directory( $cache . '/' . $key . '.lock', $cache );
+	}
+
+	/**
+	 * Delete cached previews whose source file no longer exists (or changed).
+	 *
+	 * The cache key cannot be reversed, so instead keep only the entries that
+	 * still match a live row in the files table and discard the rest.
+	 *
+	 * @return void
+	 */
+	public static function sweep_orphan_previews() {
+		global $wpdb;
+		$cache = self::cache_dir();
+		if ( ! \is_dir( $cache ) ) {
+			return;
+		}
+		$live  = array();
+		$table = $wpdb->prefix . 'linknacional_filebrowser_files';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$paths = $wpdb->get_col( "SELECT file_path FROM {$table}" );
+		foreach ( (array) $paths as $path ) {
+			if ( $path && \file_exists( $path ) ) {
+				$live[ self::preview_key( $path ) ] = true;
+			}
+		}
+		$items = @glob( $cache . '/*' );
+		if ( ! is_array( $items ) ) {
+			return;
+		}
+		foreach ( $items as $item ) {
+			if ( \is_dir( $item ) ) {
+				continue;
+			}
+			$name = basename( $item );
+			if ( ! preg_match( '/\.(pdf|lock)$/', $name ) ) {
+				continue;
+			}
+			$key = preg_replace( '/\.(pdf|lock)$/', '', $name );
+			if ( ! isset( $live[ $key ] ) ) {
+				wp_delete_file_from_directory( $item, $cache );
+			}
+		}
 	}
 
 	/**
