@@ -75,14 +75,18 @@ class LinkNacionalFilebrowserAdmin {
 			'rename_file_lbl'   => esc_html__( 'File name', 'linknacional-file-browser' ),
 			'delete_title'      => esc_html__( 'Delete item', 'linknacional-file-browser' ),
 			'delete_selected_title' => esc_html__( 'Delete selected items', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'delete_one_msg'    => esc_html__( '“%s” will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'delete_folder_warn' => esc_html__( 'Everything inside this folder will be deleted too.', 'linknacional-file-browser' ),
+			/* translators: %d: number of items */
 			'delete_many_msg'   => esc_html__( '%d items will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'delete'            => esc_html__( 'Delete', 'linknacional-file-browser' ),
 			'link_copied'       => esc_html__( 'Link copied to clipboard', 'linknacional-file-browser' ),
 			'copied_fallback'   => esc_html__( 'Copy this link:', 'linknacional-file-browser' ),
+			/* translators: %d: number of selected items */
 			'selected_items'    => esc_html__( '%d selected', 'linknacional-file-browser' ),
 			'move_here'         => esc_html__( 'Move here', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'moved_ok'          => esc_html__( '“%s” moved', 'linknacional-file-browser' ),
 			'move_error'        => esc_html__( 'Could not move the item', 'linknacional-file-browser' ),
 			'drop_upload'       => esc_html__( 'Drop files to upload', 'linknacional-file-browser' ),
@@ -93,6 +97,7 @@ class LinkNacionalFilebrowserAdmin {
 			'retry'             => esc_html__( 'Retry', 'linknacional-file-browser' ),
 			'clear'             => esc_html__( 'Clear', 'linknacional-file-browser' ),
 			'close'             => esc_html__( 'Close', 'linknacional-file-browser' ),
+			/* translators: %s: folder name */
 			'folder_created'    => esc_html__( 'Folder “%s” created', 'linknacional-file-browser' ),
 			'folder_renamed'    => esc_html__( 'Folder renamed', 'linknacional-file-browser' ),
 			'file_renamed'      => esc_html__( 'File renamed', 'linknacional-file-browser' ),
@@ -137,7 +142,9 @@ class LinkNacionalFilebrowserAdmin {
 			'copy_to'           => esc_html__( 'Copy to…', 'linknacional-file-browser' ),
 			'copied_ok'         => esc_html__( 'Copied', 'linknacional-file-browser' ),
 			'copy_error'        => esc_html__( 'Could not copy the item', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'trash_confirm'     => esc_html__( '“%s” will be moved to the trash.', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'purge_confirm'     => esc_html__( '“%s” will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'type_image'        => esc_html__( 'Image', 'linknacional-file-browser' ),
 			'type_pdf'          => esc_html__( 'PDF', 'linknacional-file-browser' ),
