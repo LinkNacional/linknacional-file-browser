@@ -75,14 +75,18 @@ class LinkNacionalFilebrowserAdmin {
 			'rename_file_lbl'   => esc_html__( 'File name', 'linknacional-file-browser' ),
 			'delete_title'      => esc_html__( 'Delete item', 'linknacional-file-browser' ),
 			'delete_selected_title' => esc_html__( 'Delete selected items', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'delete_one_msg'    => esc_html__( '“%s” will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'delete_folder_warn' => esc_html__( 'Everything inside this folder will be deleted too.', 'linknacional-file-browser' ),
+			/* translators: %d: number of items */
 			'delete_many_msg'   => esc_html__( '%d items will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'delete'            => esc_html__( 'Delete', 'linknacional-file-browser' ),
 			'link_copied'       => esc_html__( 'Link copied to clipboard', 'linknacional-file-browser' ),
 			'copied_fallback'   => esc_html__( 'Copy this link:', 'linknacional-file-browser' ),
+			/* translators: %d: number of selected items */
 			'selected_items'    => esc_html__( '%d selected', 'linknacional-file-browser' ),
 			'move_here'         => esc_html__( 'Move here', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'moved_ok'          => esc_html__( '“%s” moved', 'linknacional-file-browser' ),
 			'move_error'        => esc_html__( 'Could not move the item', 'linknacional-file-browser' ),
 			'drop_upload'       => esc_html__( 'Drop files to upload', 'linknacional-file-browser' ),
@@ -93,6 +97,7 @@ class LinkNacionalFilebrowserAdmin {
 			'retry'             => esc_html__( 'Retry', 'linknacional-file-browser' ),
 			'clear'             => esc_html__( 'Clear', 'linknacional-file-browser' ),
 			'close'             => esc_html__( 'Close', 'linknacional-file-browser' ),
+			/* translators: %s: folder name */
 			'folder_created'    => esc_html__( 'Folder “%s” created', 'linknacional-file-browser' ),
 			'folder_renamed'    => esc_html__( 'Folder renamed', 'linknacional-file-browser' ),
 			'file_renamed'      => esc_html__( 'File renamed', 'linknacional-file-browser' ),
@@ -137,7 +142,9 @@ class LinkNacionalFilebrowserAdmin {
 			'copy_to'           => esc_html__( 'Copy to…', 'linknacional-file-browser' ),
 			'copied_ok'         => esc_html__( 'Copied', 'linknacional-file-browser' ),
 			'copy_error'        => esc_html__( 'Could not copy the item', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'trash_confirm'     => esc_html__( '“%s” will be moved to the trash.', 'linknacional-file-browser' ),
+			/* translators: %s: item name */
 			'purge_confirm'     => esc_html__( '“%s” will be permanently deleted. This cannot be undone.', 'linknacional-file-browser' ),
 			'type_image'        => esc_html__( 'Image', 'linknacional-file-browser' ),
 			'type_pdf'          => esc_html__( 'PDF', 'linknacional-file-browser' ),
@@ -362,6 +369,7 @@ class LinkNacionalFilebrowserAdmin {
 			// Store under an unguessable name; the display name stays in original_name.
 			$stored   = LinkNacionalFilebrowserFiles::hashed_filename( pathinfo( $movefile['file'], PATHINFO_EXTENSION ), $filebrowser_dir );
 			$new_path = $filebrowser_dir . '/' . $stored;
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Moving the freshly uploaded file on the local filesystem; WP_Filesystem::move() may require FTP credentials.
 			if ( @rename( $movefile['file'], $new_path ) ) {
 				$filename  = $stored;
 				$file_path = $new_path;
@@ -430,8 +438,9 @@ class LinkNacionalFilebrowserAdmin {
 		}
 		$file_id = isset( $_POST['file_id'] ) ? intval( wp_unslash( $_POST['file_id'] ) ) : 0;
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$file = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id));
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ($file) {
 			if ( file_exists( $file->file_path ) ) {
 				LinkNacionalFilebrowserFiles::delete_preview( $file->file_path );
@@ -461,8 +470,7 @@ class LinkNacionalFilebrowserAdmin {
 		}
 		global $wpdb;
 		$table = $type === 'folder' ? $this->table_folders() : $this->table_files();
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$current = $wpdb->get_var( $wpdb->prepare( "SELECT is_favorite FROM {$table} WHERE id = %d", $id ) );
+		$current = $wpdb->get_var( $wpdb->prepare( 'SELECT is_favorite FROM ' . esc_sql( $table ) . ' WHERE id = %d', $id ) );
 		if ( null === $current ) {
 			wp_send_json_error( esc_html__( 'Item not found', 'linknacional-file-browser' ) );
 		}
@@ -490,8 +498,9 @@ class LinkNacionalFilebrowserAdmin {
 			wp_send_json_error( esc_html__( 'Invalid item', 'linknacional-file-browser' ) );
 		}
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$current = $wpdb->get_var( $wpdb->prepare( "SELECT allow_download FROM {$this->table_files()} WHERE id = %d", $id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( null === $current ) {
 			wp_send_json_error( esc_html__( 'Item not found', 'linknacional-file-browser' ) );
 		}
@@ -516,7 +525,7 @@ class LinkNacionalFilebrowserAdmin {
 			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
 		}
 
-		$raw = isset( $_POST['file_ids'] ) ? wp_unslash( $_POST['file_ids'] ) : '';
+		$raw = isset( $_POST['file_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['file_ids'] ) ) : '';
 		$ids = array();
 		foreach ( explode( ',', (string) $raw ) as $part ) {
 			$part = intval( $part );
@@ -531,12 +540,12 @@ class LinkNacionalFilebrowserAdmin {
 
 		global $wpdb;
 		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table name from $wpdb->prefix; placeholders built dynamically.
 		$rows = $wpdb->get_results( $wpdb->prepare(
 			"SELECT id FROM {$this->table_files()} WHERE id IN ($placeholders) AND is_trashed = 0",
 			$ids
 		) );
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 		$links = array();
 		foreach ( $rows as $row ) {
@@ -629,15 +638,17 @@ class LinkNacionalFilebrowserAdmin {
 		foreach ( $items as $item ) {
 			if ( $item['type'] === 'folder' ) {
 				$this->set_folder_trashed_recursive( $item['id'], 0, null );
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 				$parent = (int) $wpdb->get_var( $wpdb->prepare( "SELECT parent_id FROM {$this->table_folders()} WHERE id = %d", $item['id'] ) );
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				if ( $parent > 0 ) {
 					$this->restore_ancestors( $parent );
 				}
 			} else {
 				$wpdb->update( $this->table_files(), array( 'is_trashed' => 0, 'trashed_at' => null ), array( 'id' => $item['id'] ), array( '%d', '%s' ), array( '%d' ) );
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 				$folder_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT folder_id FROM {$this->table_files()} WHERE id = %d", $item['id'] ) );
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				if ( $folder_id > 0 ) {
 					$this->restore_ancestors( $folder_id );
 				}
@@ -724,8 +735,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function copy_file( $file_id, $target_folder_id ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $file ) {
 			return false;
 		}
@@ -763,8 +775,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function copy_folder_recursive( $folder_id, $target_parent_id ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$folder = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_folders()} WHERE id = %d", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $folder ) {
 			return;
 		}
@@ -797,8 +810,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function purge_file( $file_id ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( $file && file_exists( $file->file_path ) ) {
 			LinkNacionalFilebrowserFiles::delete_preview( $file->file_path );
 			wp_delete_file_from_directory( $file->file_path, LinkNacionalFilebrowserFiles::storage_dir() );
@@ -829,8 +843,9 @@ class LinkNacionalFilebrowserAdmin {
 			array( '%d', '%s' ),
 			array( '%d' )
 		);
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$children = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE parent_id = %d", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		foreach ( $children as $child_id ) {
 			$this->set_folder_trashed_recursive( (int) $child_id, $state, $now );
 		}
@@ -842,8 +857,8 @@ class LinkNacionalFilebrowserAdmin {
 	 * @return array
 	 */
 	private function parse_items_param() {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		$raw = isset( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : '';
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by callers via check_ajax_referer().
+		$raw = isset( $_POST['items'] ) ? sanitize_text_field( wp_unslash( $_POST['items'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$decoded = json_decode( $raw, true );
 		if ( ! is_array( $decoded ) ) {
@@ -880,8 +895,9 @@ class LinkNacionalFilebrowserAdmin {
 			wp_die( esc_html__( 'Insufficient permissions', 'linknacional-file-browser' ) );
 		}
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$folders = $wpdb->get_results("SELECT * FROM {$this->table_folders()} WHERE is_trashed = 0 ORDER BY parent_id ASC, name ASC");
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		wp_send_json_success($folders);
 	}
 
@@ -907,7 +923,7 @@ class LinkNacionalFilebrowserAdmin {
 			return $folders;
 		}
 		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Table name from $wpdb->prefix; placeholders built dynamically.
 		$sub_counts  = $wpdb->get_results( $wpdb->prepare(
 			"SELECT parent_id AS fid, COUNT(*) AS total FROM {$this->table_folders()} WHERE parent_id IN ($placeholders) AND is_trashed = 0 GROUP BY parent_id",
 			$ids
@@ -916,7 +932,7 @@ class LinkNacionalFilebrowserAdmin {
 			"SELECT folder_id AS fid, COUNT(*) AS total FROM {$this->table_files()} WHERE folder_id IN ($placeholders) AND is_trashed = 0 GROUP BY folder_id",
 			$ids
 		) );
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 		$totals = array();
 		foreach ( $sub_counts as $row ) {
 			$key = (int) $row->fid;
@@ -969,8 +985,9 @@ class LinkNacionalFilebrowserAdmin {
 		$current_id = (int) $folder_id;
 		$guard      = 0;
 		while ( $current_id > 0 && $guard < 1000 ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 			$folder = $wpdb->get_row( $wpdb->prepare( "SELECT id, name, parent_id FROM {$this->table_folders()} WHERE id = %d", $current_id ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			if ( ! $folder ) {
 				break;
 			}
@@ -1078,8 +1095,9 @@ class LinkNacionalFilebrowserAdmin {
 		$target  = isset( $_POST['target_folder_id'] ) ? intval( wp_unslash( $_POST['target_folder_id'] ) ) : 0;
 
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$file = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_files()} WHERE id = %d", $file_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $file ) {
 			wp_send_json_error( esc_html__( 'File not found', 'linknacional-file-browser' ) );
 		}
@@ -1119,8 +1137,9 @@ class LinkNacionalFilebrowserAdmin {
 			wp_send_json_error( esc_html__( 'Folder not found', 'linknacional-file-browser' ) );
 		}
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$folder = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_folders()} WHERE id = %d", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $folder ) {
 			wp_send_json_error( esc_html__( 'Folder not found', 'linknacional-file-browser' ) );
 		}
@@ -1161,15 +1180,17 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function rebuild_folder_paths( $folder_id ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$folder = $wpdb->get_row( $wpdb->prepare( "SELECT id, name, parent_id FROM {$this->table_folders()} WHERE id = %d", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $folder ) {
 			return;
 		}
 		$path = $this->build_folder_path( (int) $folder->parent_id ) . '/' . $folder->name;
 		$wpdb->update( $this->table_folders(), array( 'path' => $path ), array( 'id' => $folder_id ), array( '%s' ), array( '%d' ) );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$children = $wpdb->get_results( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE parent_id = %d", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		foreach ( $children as $child ) {
 			$this->rebuild_folder_paths( (int) $child->id );
 		}
@@ -1189,8 +1210,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function folder_is_active( $folder_id ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		return (bool) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE id = %d AND is_trashed = 0", $folder_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**
@@ -1204,8 +1226,9 @@ class LinkNacionalFilebrowserAdmin {
 		$current = (int) $folder_id;
 		$guard   = 0;
 		while ( $current > 0 && $guard < 1000 ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 			$parent = (int) $wpdb->get_var( $wpdb->prepare( "SELECT parent_id FROM {$this->table_folders()} WHERE id = %d", $current ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->update( $this->table_folders(), array( 'is_trashed' => 0, 'trashed_at' => null ), array( 'id' => $current ), array( '%d', '%s' ), array( '%d' ) );
 			$current = $parent;
 			++$guard;
@@ -1227,8 +1250,9 @@ class LinkNacionalFilebrowserAdmin {
 			if ( $current === (int) $ancestor_id ) {
 				return true;
 			}
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 			$current = (int) $wpdb->get_var( $wpdb->prepare( "SELECT parent_id FROM {$this->table_folders()} WHERE id = %d", $current ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			++$guard;
 		}
 		return false;
@@ -1244,16 +1268,18 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function unique_folder_name( $name, $parent_id, $exclude_id = 0 ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE name = %s AND parent_id = %d AND id != %d", $name, $parent_id, $exclude_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $exists ) {
 			return $name;
 		}
 		$i = 2;
 		do {
 			$candidate = $name . ' (' . $i . ')';
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE name = %s AND parent_id = %d AND id != %d", $candidate, $parent_id, $exclude_id ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			++$i;
 		} while ( $exists );
 		return $candidate;
@@ -1269,8 +1295,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function folder_name_exists( $name, $parent_id, $exclude_id = 0 ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$names = $wpdb->get_col( $wpdb->prepare( "SELECT name FROM {$this->table_folders()} WHERE parent_id = %d AND id != %d", $parent_id, $exclude_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$target = \function_exists( 'mb_strtolower' ) ? \mb_strtolower( $name, 'UTF-8' ) : \strtolower( $name );
 		foreach ( $names as $existing ) {
 			$existing = \function_exists( 'mb_strtolower' ) ? \mb_strtolower( $existing, 'UTF-8' ) : \strtolower( $existing );
@@ -1291,8 +1318,9 @@ class LinkNacionalFilebrowserAdmin {
 	 */
 	private function unique_file_name_in_folder( $name, $folder_id, $exclude_id = 0 ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_files()} WHERE original_name = %s AND folder_id = %d AND id != %d", $name, $folder_id, $exclude_id ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( ! $exists ) {
 			return $name;
 		}
@@ -1302,8 +1330,9 @@ class LinkNacionalFilebrowserAdmin {
 		$i        = 1;
 		do {
 			$candidate = $base . ' (' . $i . ')' . $ext;
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; not user input.
 			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_files()} WHERE original_name = %s AND folder_id = %d AND id != %d", $candidate, $folder_id, $exclude_id ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			++$i;
 		} while ( $exists );
 		return $candidate;

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensions'] : '';
+$linknacional_filebrowser_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensions'] : '';
 ?>
 <div class="wrap lkn-fb-admin">
 
@@ -206,7 +206,12 @@ $lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensio
 					</button>
 				</div>
 				<p class="lkn-fb-muted"><?php esc_html_e( 'The browser displays every folder and file you create here. Visitors can browse and download files — read-only.', 'linknacional-file-browser' ); ?></p>
-				<p class="lkn-fb-muted"><?php printf( esc_html__( 'Maximum upload size: %s', 'linknacional-file-browser' ), esc_html( $data['max_upload_size_label'] ) ); ?></p>
+				<p class="lkn-fb-muted">
+					<?php
+					/* translators: %s: maximum upload size (e.g. 8 MB) */
+					printf( esc_html__( 'Maximum upload size: %s', 'linknacional-file-browser' ), esc_html( $data['max_upload_size_label'] ) );
+					?>
+				</p>
 			</div>
 
 			<div class="lkn-fb-card">
@@ -237,7 +242,7 @@ $lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensio
 		</div>
 	</section>
 
-	<input type="file" id="lkn-fb-file-input" multiple accept="<?php echo esc_attr( $lkn_extensions ); ?>" hidden>
+	<input type="file" id="lkn-fb-file-input" multiple accept="<?php echo esc_attr( $linknacional_filebrowser_extensions ); ?>" hidden>
 </div>
 
 <!-- ===================== CREATE FOLDER MODAL ===================== -->
