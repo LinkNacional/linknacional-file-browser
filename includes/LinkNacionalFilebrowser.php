@@ -33,6 +33,9 @@ class LinkNacionalFilebrowser {
 
 	private function define_core_hooks() {
 		$this->loader->add_action( 'plugins_loaded', LinkNacionalFilebrowserActivator::class, 'maybe_upgrade' );
+		// Daily cleanup of expired/revoked share tokens and orphaned previews.
+		$this->loader->add_action( LinkNacionalFilebrowserFiles::CLEANUP_HOOK, LinkNacionalFilebrowserFiles::class, 'purge_expired_tokens' );
+		$this->loader->add_action( LinkNacionalFilebrowserFiles::CLEANUP_HOOK, LinkNacionalFilebrowserFiles::class, 'sweep_orphan_previews' );
 	}
 
 	private function define_admin_hooks() {
@@ -50,6 +53,7 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_linknacional_move_file', $plugin_admin, 'move_file_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_move_folder', $plugin_admin, 'move_folder_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_toggle_favorite', $plugin_admin, 'toggle_favorite_ajax' );
+		$this->loader->add_action( 'wp_ajax_linknacional_toggle_download', $plugin_admin, 'toggle_download_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_trash_items', $plugin_admin, 'trash_items_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_restore_items', $plugin_admin, 'restore_items_ajax' );
 		$this->loader->add_action( 'wp_ajax_linknacional_purge_items', $plugin_admin, 'purge_items_ajax' );
@@ -63,6 +67,7 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_get_admin_nonce', $plugin_admin, 'linknacional_get_admin_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_get_admin_nonce', $plugin_admin, 'linknacional_get_admin_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_migrate', $plugin_admin, 'migrate_ajax' );
+		$this->loader->add_action( 'wp_ajax_linknacional_share_files', $plugin_admin, 'share_files_ajax' );
 	}
 
 	private function define_public_hooks() {
@@ -81,6 +86,18 @@ class LinkNacionalFilebrowser {
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_frontend_get_folder_files', $plugin_public, 'get_folder_files_frontend' );
 		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
 		$this->loader->add_action( 'wp_ajax_linknacional_get_public_nonce', $plugin_public, 'linknacional_get_public_nonce');
+
+		// Frontend "Copy for AI" — issue temporary share links for files.
+		$this->loader->add_action( 'wp_ajax_linknacional_frontend_share', $plugin_public, 'share_files_frontend' );
+		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_frontend_share', $plugin_public, 'share_files_frontend' );
+
+		// File delivery endpoint — enforces the per-file download restriction for visitors.
+		$this->loader->add_action( 'wp_ajax_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
+		$this->loader->add_action( 'wp_ajax_nopriv_linknacional_serve_file', $plugin_public, 'serve_file_ajax' );
+
+		// Standalone viewer page for token-protected share links.
+		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_viewer_query_vars' );
+		$this->loader->add_action( 'template_redirect', $plugin_public, 'render_viewer_page' );
 
 		// Prevent LiteSpeed Cache from combining/minifying FontAwesome bundle
 		$this->loader->add_filter( 'script_loader_tag', $this, 'add_no_optimize_attr', 10, 3 );

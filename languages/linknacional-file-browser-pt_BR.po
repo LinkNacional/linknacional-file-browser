@@ -3,41 +3,44 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Link Nacional File Browser 1.1.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/linknacional-file-browser\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/linknacional-file-"
+"browser\n"
+"POT-Creation-Date: 2026-09-30T16:51:50+00:00\n"
+"PO-Revision-Date: 2026-09-30T16:51:50+00:00\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T16:51:50+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: linknacional-file-browser\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. Plugin Name of the plugin
 #: linknacional-file-browser.php
 msgid "Link Nacional File Browser"
-msgstr ""
+msgstr "Link Nacional File Browser"
 
 #. Plugin URI of the plugin
 #: linknacional-file-browser.php
 msgid "https://www.linknacional.com.br"
-msgstr ""
+msgstr "https://www.linknacional.com.br"
 
 #. Description of the plugin
 #: linknacional-file-browser.php
 msgid "Create your folder structure and display it on the frontend."
-msgstr ""
+msgstr "Crie sua estrutura de pastas e exiba-a no frontend."
 
 #. Author of the plugin
 #: linknacional-file-browser.php
 msgid "Link Nacional"
-msgstr ""
+msgstr "Link Nacional"
 
 #. Author URI of the plugin
 #: linknacional-file-browser.php
 msgid "https://www.linknacional.com.br/"
-msgstr ""
+msgstr "https://www.linknacional.com.br/"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:37
 #: admin/LinkNacionalFilebrowserAdmin.php:116
@@ -49,106 +52,106 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:756
 #: public/LinkNacionalFilebrowserPublic.php:779
 msgid "Home"
-msgstr ""
+msgstr "Início"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:38
 #: public/LinkNacionalFilebrowserPublic.php:260
 msgid "Folder"
-msgstr ""
+msgstr "Pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:39
 #: public/LinkNacionalFilebrowserPublic.php:271
 msgid "items"
-msgstr ""
+msgstr "itens"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:40
 msgid "Loading…"
-msgstr ""
+msgstr "Carregando…"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:41
 msgid "Copied!"
-msgstr ""
+msgstr "Copiado!"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:42
 msgid "Saved"
-msgstr ""
+msgstr "Salvo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:43
 #: admin/partials/linknacional-filebrowser-admin-display.php:143
 msgid "Uploading files…"
-msgstr ""
+msgstr "Fazendo upload de arquivos…"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:44
 #: public/LinkNacionalFilebrowserPublic.php:265
 msgid "This folder is empty"
-msgstr ""
+msgstr "Esta pasta está vazia"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:45
 msgid "Drag files here or use the Upload button to add content."
-msgstr ""
+msgstr "Arraste arquivos aqui ou use o botão Upload para adicionar conteúdo."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:46
 msgid "No matching items"
-msgstr ""
+msgstr "Nenhum item correspondente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:47
 #: public/LinkNacionalFilebrowserPublic.php:262
 msgid "Could not load contents"
-msgstr ""
+msgstr "Não foi possível carregar o conteúdo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:48
 msgid "Something went wrong. Please try again."
-msgstr ""
+msgstr "Algo deu errado. Tente novamente."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:49
 msgid "Name cannot be empty"
-msgstr ""
+msgstr "O nome não pode estar vazio"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:50
 msgid "An item with this name already exists"
-msgstr ""
+msgstr "Já existe um item com este nome"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:51
 msgid "Error creating folder"
-msgstr ""
+msgstr "Erro ao criar pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:52
 msgid "Error updating name"
-msgstr ""
+msgstr "Erro ao atualizar o nome"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:53
 msgid "Unknown error"
-msgstr ""
+msgstr "Erro desconhecido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:54
 msgid "Expand/Collapse"
-msgstr ""
+msgstr "Expandir/Recolher"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:55
 msgid "Hide Subfolders"
-msgstr ""
+msgstr "Ocultar subpastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:56
 msgid "Show Subfolders"
-msgstr ""
+msgstr "Mostrar subpastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:57
 #: public/LinkNacionalFilebrowserPublic.php:300
 msgid "Show folders"
-msgstr ""
+msgstr "Mostrar pastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:58
 #: public/LinkNacionalFilebrowserPublic.php:301
 msgid "Hide folders"
-msgstr ""
+msgstr "Ocultar pastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:59
 msgid "Collapse"
-msgstr ""
+msgstr "Recolher"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:60
 msgid "Confirm"
-msgstr ""
+msgstr "Confirmar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:61
 #: admin/partials/linknacional-filebrowser-admin-display.php:253
@@ -156,154 +159,154 @@ msgstr ""
 #: admin/partials/linknacional-filebrowser-admin-display.php:289
 #: admin/partials/linknacional-filebrowser-admin-display.php:301
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:62
 #: admin/partials/linknacional-filebrowser-admin-display.php:274
 msgid "Save"
-msgstr ""
+msgstr "Salvar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:63
 #: admin/partials/linknacional-filebrowser-admin-display.php:254
 msgid "Create folder"
-msgstr ""
+msgstr "Criar pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:64
 #: admin/LinkNacionalFilebrowserAdmin.php:73
 #: admin/partials/linknacional-filebrowser-admin-display.php:264
 msgid "Rename"
-msgstr ""
+msgstr "Renomear"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:65
 msgid "Delete folder"
-msgstr ""
+msgstr "Excluir pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:66
 msgid "Delete file"
-msgstr ""
+msgstr "Excluir arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:67
 #: public/LinkNacionalFilebrowserPublic.php:272
 msgid "Open"
-msgstr ""
+msgstr "Abrir"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:68
 #: public/LinkNacionalFilebrowserPublic.php:231
 #: public/LinkNacionalFilebrowserPublic.php:273
 msgid "Download"
-msgstr ""
+msgstr "Download"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:69
 #: public/LinkNacionalFilebrowserPublic.php:283
 msgid "Copy link"
-msgstr ""
+msgstr "Copiar link"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:70
 #: admin/partials/linknacional-filebrowser-admin-display.php:284
 msgid "Move to…"
-msgstr ""
+msgstr "Mover para…"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:71
 #: public/LinkNacionalFilebrowserPublic.php:282
 msgid "Preview"
-msgstr ""
+msgstr "Pré-visualizar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:72
 #: public/LinkNacionalFilebrowserPublic.php:284
 msgid "More actions"
-msgstr ""
+msgstr "Mais ações"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:74
 #: admin/partials/linknacional-filebrowser-admin-display.php:249
 msgid "Folder name"
-msgstr ""
+msgstr "Nome da pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:75
 msgid "File name"
-msgstr ""
+msgstr "Nome do arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:76
 msgid "Delete item"
-msgstr ""
+msgstr "Excluir item"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:77
 msgid "Delete selected items"
-msgstr ""
+msgstr "Excluir itens selecionados"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:78
 #: admin/LinkNacionalFilebrowserAdmin.php:141
 #, php-format
 msgid "“%s” will be permanently deleted. This cannot be undone."
-msgstr ""
+msgstr "“%s” será excluído permanentemente. Isso não pode ser desfeito."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:79
 msgid "Everything inside this folder will be deleted too."
-msgstr ""
+msgstr "Tudo dentro desta pasta também será excluído."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:80
 #, php-format
 msgid "%d items will be permanently deleted. This cannot be undone."
-msgstr ""
+msgstr "%d itens serão excluídos permanentemente. Isso não pode ser desfeito."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:81
 msgid "Delete"
-msgstr ""
+msgstr "Excluir"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:82
 #: public/LinkNacionalFilebrowserPublic.php:286
 msgid "Link copied to clipboard"
-msgstr ""
+msgstr "Link copiado para a área de transferência"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:83
 #: public/LinkNacionalFilebrowserPublic.php:287
 msgid "Copy this link:"
-msgstr ""
+msgstr "Copie este link:"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:84
 #, php-format
 msgid "%d selected"
-msgstr ""
+msgstr "%d selecionado(s)"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:85
 msgid "Move here"
-msgstr ""
+msgstr "Mover para cá"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:86
 #, php-format
 msgid "“%s” moved"
-msgstr ""
+msgstr "“%s” movido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:87
 msgid "Could not move the item"
-msgstr ""
+msgstr "Não foi possível mover o item"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:88
 msgid "Drop files to upload"
-msgstr ""
+msgstr "Solte os arquivos para fazer upload"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:89
 msgid "Upload complete"
-msgstr ""
+msgstr "Upload concluído"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:90
 msgid "Some files could not be uploaded"
-msgstr ""
+msgstr "Não foi possível fazer upload de alguns arquivos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:91
 msgid "Error uploading files"
-msgstr ""
+msgstr "Erro ao fazer upload de arquivos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:92
 msgid "Upload failed"
-msgstr ""
+msgstr "Falha no upload"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:93
 msgid "Retry"
-msgstr ""
+msgstr "Tentar novamente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:94
 msgid "Clear"
-msgstr ""
+msgstr "Limpar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:95
 #: admin/partials/linknacional-filebrowser-admin-display.php:161
@@ -313,316 +316,316 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:230
 #: public/LinkNacionalFilebrowserPublic.php:285
 msgid "Close"
-msgstr ""
+msgstr "Fechar"
 
 #. translators: %s: folder name
 #: admin/LinkNacionalFilebrowserAdmin.php:96
 #: admin/LinkNacionalFilebrowserAdmin.php:292
 #, php-format
 msgid "Folder “%s” created"
-msgstr ""
+msgstr "Pasta “%s” criada"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:97
 msgid "Folder renamed"
-msgstr ""
+msgstr "Pasta renomeada"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:98
 msgid "File renamed"
-msgstr ""
+msgstr "Arquivo renomeado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:99
 msgid "Deleted"
-msgstr ""
+msgstr "Excluído"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:100
 msgid "Some items could not be deleted"
-msgstr ""
+msgstr "Alguns itens não puderam ser excluídos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:101
 msgid "Could not delete the items"
-msgstr ""
+msgstr "Não foi possível excluir os itens"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:102
 msgid "It is already in this folder"
-msgstr ""
+msgstr "Já está nesta pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:103
 msgid "File type not allowed"
-msgstr ""
+msgstr "Tipo de arquivo não permitido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:104
 msgid "Migrating…"
-msgstr ""
+msgstr "Migrando…"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:105
 #: admin/partials/linknacional-filebrowser-admin-display.php:52
 msgid "Migrate Now"
-msgstr ""
+msgstr "Migrar agora"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:106
 msgid "Migration failed. Please try again."
-msgstr ""
+msgstr "Falha na migração. Tente novamente."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:107
 msgid "just now"
-msgstr ""
+msgstr "agora mesmo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:108
 #: admin/partials/linknacional-filebrowser-admin-display.php:167
 #: public/LinkNacionalFilebrowserPublic.php:288
 msgid "Details"
-msgstr ""
+msgstr "Detalhes"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:109
 #: admin/partials/linknacional-filebrowser-admin-display.php:266
 #: public/LinkNacionalFilebrowserPublic.php:289
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:110
 #: public/LinkNacionalFilebrowserPublic.php:290
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:111
 #: public/LinkNacionalFilebrowserPublic.php:291
 msgid "Size"
-msgstr ""
+msgstr "Tamanho"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:112
 #: public/LinkNacionalFilebrowserPublic.php:292
 msgid "Location"
-msgstr ""
+msgstr "Local"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:113
 #: public/LinkNacionalFilebrowserPublic.php:293
 msgid "Modified"
-msgstr ""
+msgstr "Modificado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:114
 #: admin/partials/linknacional-filebrowser-admin-display.php:172
 #: public/LinkNacionalFilebrowserPublic.php:294
 msgid "Copy URL"
-msgstr ""
+msgstr "Copiar URL"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:115
 #: admin/partials/linknacional-filebrowser-admin-display.php:178
 #: public/LinkNacionalFilebrowserPublic.php:295
 msgid "Quick actions"
-msgstr ""
+msgstr "Ações rápidas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:117
 #: admin/partials/linknacional-filebrowser-admin-display.php:69
 #: public/LinkNacionalFilebrowserPublic.php:297
 #: public/LinkNacionalFilebrowserPublic.php:363
 msgid "Favorites"
-msgstr ""
+msgstr "Favoritos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:118
 #: admin/partials/linknacional-filebrowser-admin-display.php:72
 #: public/LinkNacionalFilebrowserPublic.php:298
 #: public/LinkNacionalFilebrowserPublic.php:366
 msgid "Recent"
-msgstr ""
+msgstr "Recentes"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:119
 #: admin/partials/linknacional-filebrowser-admin-display.php:75
 #: public/LinkNacionalFilebrowserPublic.php:299
 msgid "Trash"
-msgstr ""
+msgstr "Lixeira"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:120
 #: admin/partials/linknacional-filebrowser-admin-display.php:81
 #: public/LinkNacionalFilebrowserPublic.php:302
 #: public/LinkNacionalFilebrowserPublic.php:371
 msgid "Folders"
-msgstr ""
+msgstr "Pastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:121
 #: admin/partials/linknacional-filebrowser-admin-display.php:82
 msgid "New folder"
-msgstr ""
+msgstr "Nova pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:122
 #: admin/partials/linknacional-filebrowser-admin-display.php:130
 msgid "Upload files"
-msgstr ""
+msgstr "Fazer upload de arquivos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:123
 #: admin/partials/linknacional-filebrowser-admin-display.php:131
 msgid "Click to browse or drag files here"
-msgstr ""
+msgstr "Clique para procurar ou arraste arquivos aqui"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:124
 #: public/LinkNacionalFilebrowserPublic.php:303
 msgid "No favorites yet"
-msgstr ""
+msgstr "Nenhum favorito ainda"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:125
 #: public/LinkNacionalFilebrowserPublic.php:304
 msgid "No recent files"
-msgstr ""
+msgstr "Nenhum arquivo recente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:126
 #: public/LinkNacionalFilebrowserPublic.php:305
 msgid "Trash is empty"
-msgstr ""
+msgstr "A lixeira está vazia"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:127
 msgid "Move to trash"
-msgstr ""
+msgstr "Mover para a lixeira"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:128
 msgid "Restore"
-msgstr ""
+msgstr "Restaurar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:129
 msgid "Delete permanently"
-msgstr ""
+msgstr "Excluir permanentemente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:130
 #: admin/LinkNacionalFilebrowserAdmin.php:613
 msgid "Moved to trash"
-msgstr ""
+msgstr "Movido para a lixeira"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:131
 msgid "Restored"
-msgstr ""
+msgstr "Restaurado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:132
 msgid "Deleted permanently"
-msgstr ""
+msgstr "Excluído permanentemente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:133
 #: admin/LinkNacionalFilebrowserAdmin.php:474
 msgid "Added to favorites"
-msgstr ""
+msgstr "Adicionado aos favoritos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:134
 #: admin/LinkNacionalFilebrowserAdmin.php:475
 msgid "Removed from favorites"
-msgstr ""
+msgstr "Removido dos favoritos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:135
 msgid "Add to favorites"
-msgstr ""
+msgstr "Adicionar aos favoritos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:136
 msgid "Remove from favorites"
-msgstr ""
+msgstr "Remover dos favoritos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:137
 msgid "Copy to…"
-msgstr ""
+msgstr "Copiar para…"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:138
 msgid "Copied"
-msgstr ""
+msgstr "Copiado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:139
 msgid "Could not copy the item"
-msgstr ""
+msgstr "Não foi possível copiar o item"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:140
 #, php-format
 msgid "“%s” will be moved to the trash."
-msgstr ""
+msgstr "“%s” será movido para a lixeira."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:142
 #: public/LinkNacionalFilebrowserPublic.php:240
 #: public/LinkNacionalFilebrowserPublic.php:306
 msgid "Image"
-msgstr ""
+msgstr "Imagem"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:143
 #: public/LinkNacionalFilebrowserPublic.php:241
 #: public/LinkNacionalFilebrowserPublic.php:307
 msgid "PDF"
-msgstr ""
+msgstr "PDF"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:144
 #: public/LinkNacionalFilebrowserPublic.php:308
 msgid "Document"
-msgstr ""
+msgstr "Documento"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:145
 #: public/LinkNacionalFilebrowserPublic.php:309
 msgid "Spreadsheet"
-msgstr ""
+msgstr "Planilha"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:146
 #: public/LinkNacionalFilebrowserPublic.php:310
 msgid "Presentation"
-msgstr ""
+msgstr "Apresentação"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:147
 #: public/LinkNacionalFilebrowserPublic.php:311
 msgid "Text"
-msgstr ""
+msgstr "Texto"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:148
 #: public/LinkNacionalFilebrowserPublic.php:312
 msgid "Audio"
-msgstr ""
+msgstr "Áudio"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:149
 #: public/LinkNacionalFilebrowserPublic.php:313
 msgid "Video"
-msgstr ""
+msgstr "Vídeo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:150
 #: public/LinkNacionalFilebrowserPublic.php:314
 msgid "Archive"
-msgstr ""
+msgstr "Arquivo compactado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:151
 #: public/LinkNacionalFilebrowserPublic.php:242
 #: public/LinkNacionalFilebrowserPublic.php:315
 msgid "File"
-msgstr ""
+msgstr "Arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:152
 #: admin/partials/linknacional-filebrowser-admin-display.php:114
 #: public/LinkNacionalFilebrowserPublic.php:316
 #: public/LinkNacionalFilebrowserPublic.php:404
 msgid "Copy for AI"
-msgstr ""
+msgstr "Copiar para IA"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:153
 #: public/LinkNacionalFilebrowserPublic.php:317
 msgid "Copied for AI"
-msgstr ""
+msgstr "Copiado para IA"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:154
 #: public/LinkNacionalFilebrowserPublic.php:318
 msgid "Nothing to copy"
-msgstr ""
+msgstr "Nada para copiar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:155
 #: admin/LinkNacionalFilebrowserAdmin.php:174
 #: admin/LinkNacionalFilebrowserAdmin.php:175
 #: public/LinkNacionalFilebrowserPublic.php:319
 msgid "File Browser"
-msgstr ""
+msgstr "File Browser"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:156
 #: public/LinkNacionalFilebrowserPublic.php:320
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:157
 #: admin/partials/linknacional-filebrowser-admin-display.php:215
 #: public/LinkNacionalFilebrowserPublic.php:321
 msgid "Description"
-msgstr ""
+msgstr "Descrição"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:158
 msgid "Restrict download"
-msgstr ""
+msgstr "Restringir download"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:159
 msgid "Allow download"
-msgstr ""
+msgstr "Permitir download"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:160
 #: admin/LinkNacionalFilebrowserAdmin.php:504
@@ -631,12 +634,12 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:232
 #: public/LinkNacionalFilebrowserPublic.php:274
 msgid "Download restricted"
-msgstr ""
+msgstr "Download restrito"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:161
 #: admin/LinkNacionalFilebrowserAdmin.php:503
 msgid "Download allowed"
-msgstr ""
+msgstr "Download permitido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:162
 #: public/LinkNacionalFilebrowserPublic.php:89
@@ -645,7 +648,7 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:233
 #: public/LinkNacionalFilebrowserPublic.php:275
 msgid "Preview unavailable"
-msgstr ""
+msgstr "Pré-visualização indisponível"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:163
 #: admin/partials/linknacional-filebrowser-admin-display.php:117
@@ -653,50 +656,50 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:278
 #: public/LinkNacionalFilebrowserPublic.php:407
 msgid "View"
-msgstr ""
+msgstr "Ver"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:164
 #: public/LinkNacionalFilebrowserPublic.php:235
 #: public/LinkNacionalFilebrowserPublic.php:279
 msgid "Zoom in"
-msgstr ""
+msgstr "Ampliar"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:165
 #: public/LinkNacionalFilebrowserPublic.php:236
 #: public/LinkNacionalFilebrowserPublic.php:280
 msgid "Zoom out"
-msgstr ""
+msgstr "Reduzir"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:166
 #: public/LinkNacionalFilebrowserPublic.php:237
 #: public/LinkNacionalFilebrowserPublic.php:281
 msgid "Fit to screen"
-msgstr ""
+msgstr "Ajustar à tela"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:167
 #: public/LinkNacionalFilebrowserPublic.php:238
 #: public/LinkNacionalFilebrowserPublic.php:276
 msgid "Previous page"
-msgstr ""
+msgstr "Página anterior"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:168
 #: public/LinkNacionalFilebrowserPublic.php:239
 #: public/LinkNacionalFilebrowserPublic.php:277
 msgid "Next page"
-msgstr ""
+msgstr "Próxima página"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:191
 msgid "You do not have sufficient permissions to access this page."
-msgstr ""
+msgstr "Você não tem permissões suficientes para acessar esta página."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:206
 msgid "File Browser Manager"
-msgstr ""
+msgstr "Gerenciador do File Browser"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:251
 #: public/LinkNacionalFilebrowserPublic.php:22
 msgid "Invalid request method."
-msgstr ""
+msgstr "Método de requisição inválido."
 
 #: admin/LinkNacionalFilebrowserAdmin.php:254
 #: admin/LinkNacionalFilebrowserAdmin.php:269
@@ -722,123 +725,124 @@ msgstr ""
 #: admin/LinkNacionalFilebrowserAdmin.php:1328
 #: admin/LinkNacionalFilebrowserAdmin.php:1370
 msgid "Insufficient permissions"
-msgstr ""
+msgstr "Permissões insuficientes"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:260
 #: public/LinkNacionalFilebrowserPublic.php:28
 msgid "Action name required"
-msgstr ""
+msgstr "Nome da ação obrigatório"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:274
 msgid "Folder name is required"
-msgstr ""
+msgstr "O nome da pasta é obrigatório"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:278
 msgid "A folder with this name already exists in this location"
-msgstr ""
+msgstr "Já existe uma pasta com este nome neste local"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:287
 msgid "Failed to create folder"
-msgstr ""
+msgstr "Falha ao criar pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:307
 msgid "No files uploaded"
-msgstr ""
+msgstr "Nenhum arquivo enviado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:406
 msgid "Failed to upload files"
-msgstr ""
+msgstr "Falha ao enviar arquivos"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:409
 msgid "Files uploaded successfully"
-msgstr ""
+msgstr "Arquivos enviados com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:423
 msgid "Folder deleted successfully"
-msgstr ""
+msgstr "Pasta excluída com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:442
 msgid "File deleted successfully"
-msgstr ""
+msgstr "Arquivo excluído com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:460
 #: admin/LinkNacionalFilebrowserAdmin.php:490
 #: admin/LinkNacionalFilebrowserAdmin.php:706
 msgid "Invalid item"
-msgstr ""
+msgstr "Item inválido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:467
 #: admin/LinkNacionalFilebrowserAdmin.php:496
 msgid "Item not found"
-msgstr ""
+msgstr "Item não encontrado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:529
 #: public/LinkNacionalFilebrowserPublic.php:826
 msgid "No files selected"
-msgstr ""
+msgstr "Nenhum arquivo selecionado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:549
 #: public/LinkNacionalFilebrowserPublic.php:846
 msgid "Could not create the link"
-msgstr ""
+msgstr "Não foi possível criar o link"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:602
 #: admin/LinkNacionalFilebrowserAdmin.php:626
 #: admin/LinkNacionalFilebrowserAdmin.php:659
 msgid "No items provided"
-msgstr ""
+msgstr "Nenhum item fornecido"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:646
 msgid "Items restored"
-msgstr ""
+msgstr "Itens restaurados"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:669
 msgid "Items permanently deleted"
-msgstr ""
+msgstr "Itens excluídos permanentemente"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:691
 msgid "Trash emptied"
-msgstr ""
+msgstr "Lixeira esvaziada"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:709
 #: admin/LinkNacionalFilebrowserAdmin.php:1090
 #: admin/LinkNacionalFilebrowserAdmin.php:1135
 msgid "Destination folder not found"
-msgstr ""
+msgstr "Pasta de destino não encontrada"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:713
 msgid "A folder cannot be copied into itself or its subfolders"
 msgstr ""
+"Uma pasta não pode ser copiada para dentro de si mesma ou de suas subpastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:719
 msgid "Copied successfully"
-msgstr ""
+msgstr "Copiado com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1012
 msgid "Folder name cannot be empty"
-msgstr ""
+msgstr "O nome da pasta não pode estar vazio"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1019
 #: admin/LinkNacionalFilebrowserAdmin.php:1119
 #: admin/LinkNacionalFilebrowserAdmin.php:1125
 msgid "Folder not found"
-msgstr ""
+msgstr "Pasta não encontrada"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1022
 msgid "A folder with this name already exists"
-msgstr ""
+msgstr "Já existe uma pasta com este nome"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1027
 msgid "Folder name updated successfully"
-msgstr ""
+msgstr "Nome da pasta atualizado com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1029
 msgid "Error updating folder name"
-msgstr ""
+msgstr "Erro ao atualizar o nome da pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1041
 msgid "File name cannot be empty"
-msgstr ""
+msgstr "O nome do arquivo não pode estar vazio"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1047
 #: admin/LinkNacionalFilebrowserAdmin.php:1084
@@ -847,301 +851,324 @@ msgstr ""
 #: public/LinkNacionalFilebrowserPublic.php:196
 #: public/LinkNacionalFilebrowserPublic.php:201
 msgid "File not found"
-msgstr ""
+msgstr "Arquivo não encontrado"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1052
 msgid "A file with this name already exists"
-msgstr ""
+msgstr "Já existe um arquivo com este nome"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1058
 msgid "Cannot change the file extension"
-msgstr ""
+msgstr "Não é possível alterar a extensão do arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1063
 msgid "File name updated successfully"
-msgstr ""
+msgstr "Nome do arquivo atualizado com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1065
 msgid "Error updating file name"
-msgstr ""
+msgstr "Erro ao atualizar o nome do arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1087
 msgid "File is already in this folder"
-msgstr ""
+msgstr "O arquivo já está nesta pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1102
 msgid "Error moving the file"
-msgstr ""
+msgstr "Erro ao mover o arquivo"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1104
 msgid "File moved successfully"
-msgstr ""
+msgstr "Arquivo movido com sucesso"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1128
 msgid "Folder is already in this location"
-msgstr ""
+msgstr "A pasta já está neste local"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1131
 msgid "A folder cannot be moved into itself"
-msgstr ""
+msgstr "Uma pasta não pode ser movida para dentro de si mesma"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1138
 msgid "A folder cannot be moved into one of its own subfolders"
 msgstr ""
+"Uma pasta não pode ser movida para dentro de uma de suas próprias subpastas"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1151
 msgid "Error moving the folder"
-msgstr ""
+msgstr "Erro ao mover a pasta"
 
 #: admin/LinkNacionalFilebrowserAdmin.php:1154
 msgid "Folder moved successfully"
-msgstr ""
+msgstr "Pasta movida com sucesso"
 
 #. translators: 1: folders count, 2: files count
 #: admin/LinkNacionalFilebrowserAdmin.php:1498
 #, php-format
 msgid "Migration complete: %1$d folders and %2$d files migrated."
-msgstr ""
+msgstr "Migração concluída: %1$d pastas e %2$d arquivos migrados."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:30
 msgid "Organize your files and share them anywhere with a shortcode."
 msgstr ""
+"Organize seus arquivos e compartilhe-os em qualquer lugar com um shortcode."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:35
 msgid "Files"
-msgstr ""
+msgstr "Arquivos"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:38
 msgid "Help"
-msgstr ""
+msgstr "Ajuda"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:46
 msgid "Data migration required"
-msgstr ""
+msgstr "Migração de dados necessária"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:47
-msgid "We detected data from a previous version. Migrate your folders, files, and uploads to the new format."
+msgid ""
+"We detected data from a previous version. Migrate your folders, files, and "
+"uploads to the new format."
 msgstr ""
+"Detectamos dados de uma versão anterior. Migre suas pastas, arquivos e "
+"uploads para o novo formato."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:64
 #: public/LinkNacionalFilebrowserPublic.php:358
 msgid "Collections"
-msgstr ""
+msgstr "Coleções"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:88
 #: public/LinkNacionalFilebrowserPublic.php:381
 msgid "Toggle folder panel"
-msgstr ""
+msgstr "Alternar painel de pastas"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:97
 msgid "Filter this folder…"
-msgstr ""
+msgstr "Filtrar esta pasta…"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:97
 msgid "Filter current folder"
-msgstr ""
+msgstr "Filtrar pasta atual"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:98
 msgid "Clear filter"
-msgstr ""
+msgstr "Limpar filtro"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:105
 #: public/LinkNacionalFilebrowserPublic.php:395
 msgid "Sort by"
-msgstr ""
+msgstr "Ordenar por"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:107
 #: public/LinkNacionalFilebrowserPublic.php:397
 msgid "Name (A–Z)"
-msgstr ""
+msgstr "Nome (A–Z)"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:108
 #: public/LinkNacionalFilebrowserPublic.php:398
 msgid "Name (Z–A)"
-msgstr ""
+msgstr "Nome (Z–A)"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:109
 #: public/LinkNacionalFilebrowserPublic.php:399
 msgid "Newest first"
-msgstr ""
+msgstr "Mais recentes primeiro"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:110
 #: public/LinkNacionalFilebrowserPublic.php:400
 msgid "Oldest first"
-msgstr ""
+msgstr "Mais antigos primeiro"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:111
 #: public/LinkNacionalFilebrowserPublic.php:401
 msgid "Largest first"
-msgstr ""
+msgstr "Maiores primeiro"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:118
 #: public/LinkNacionalFilebrowserPublic.php:408
 msgid "Grid view"
-msgstr ""
+msgstr "Visualização em grade"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:119
 #: public/LinkNacionalFilebrowserPublic.php:409
 msgid "List view"
-msgstr ""
+msgstr "Visualização em lista"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:144
 msgid "Dismiss"
-msgstr ""
+msgstr "Dispensar"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:195
 msgid "Display it on your site"
-msgstr ""
+msgstr "Exiba-o em seu site"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:197
 msgid "Copy the shortcode below"
-msgstr ""
+msgstr "Copie o shortcode abaixo"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:198
 msgid "Open the page or post where you want the browser"
-msgstr ""
+msgstr "Abra a página ou o post onde você deseja o navegador"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:199
 msgid "Add a shortcode block in your editor"
-msgstr ""
+msgstr "Adicione um bloco de shortcode no seu editor"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:200
 msgid "Paste the shortcode and publish"
-msgstr ""
+msgstr "Cole o shortcode e publique"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:205
 msgid "Copy"
-msgstr ""
+msgstr "Copiar"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:208
-msgid "The browser displays every folder and file you create here. Visitors can browse and download files — read-only."
+msgid ""
+"The browser displays every folder and file you create here. Visitors can "
+"browse and download files — read-only."
 msgstr ""
+"O navegador exibe todas as pastas e arquivos que você cria aqui. Os "
+"visitantes podem navegar e baixar arquivos — somente leitura."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:209
 #, php-format
 msgid "Maximum upload size: %s"
-msgstr ""
+msgstr "Tamanho máximo de upload: %s"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:213
 msgid "Shortcode attributes"
-msgstr ""
+msgstr "Atributos do shortcode"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:215
 msgid "Attribute"
-msgstr ""
+msgstr "Atributo"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:215
 msgid "Default"
-msgstr ""
+msgstr "Padrão"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:217
 msgid "Folder to open on load."
-msgstr ""
+msgstr "Pasta a abrir ao carregar."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:218
-msgid "Folder id, name, or path used as the tree root (e.g. root=\"Projects\"). Everything outside it is hidden."
+msgid ""
+"Folder id, name, or path used as the tree root (e.g. root=\"Projects\"). "
+"Everything outside it is hidden."
 msgstr ""
+"ID, nome ou caminho da pasta usado como raiz da árvore (ex.: "
+"root=\"Projects\"). Tudo fora dela fica oculto."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:219
-msgid "Comma-separated folder names to hide (case-insensitive), e.g. exclude=\"Drafts,Archive\"."
+msgid ""
+"Comma-separated folder names to hide (case-insensitive), e.g. "
+"exclude=\"Drafts,Archive\"."
 msgstr ""
+"Nomes de pastas separados por vírgula a ocultar (sem diferenciar maiúsculas "
+"de minúsculas), ex.: exclude=\"Drafts,Archive\"."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:220
 msgid "Show the search box."
-msgstr ""
+msgstr "Mostrar a caixa de pesquisa."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:221
 msgid "Show the breadcrumb trail."
-msgstr ""
+msgstr "Mostrar a trilha de navegação."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:222
 msgid "Show the folder sidebar."
-msgstr ""
+msgstr "Mostrar a barra lateral de pastas."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:223
 msgid "grid or list."
-msgstr ""
+msgstr "grade ou lista."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:229
 msgid "Tips"
-msgstr ""
+msgstr "Dicas"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:231
 msgid "Drag & drop several files onto the upload area to upload them at once."
 msgstr ""
+"Arraste e solte vários arquivos na área de upload para enviá-los de uma vez."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:232
 msgid "Drag a file or folder onto another folder to move it."
-msgstr ""
+msgstr "Arraste um arquivo ou pasta sobre outra pasta para movê-lo."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:233
-msgid "Use the ⋯ menu on each item to open, download, rename, copy the link, or delete."
+msgid ""
+"Use the ⋯ menu on each item to open, download, rename, copy the link, or "
+"delete."
 msgstr ""
+"Use o menu ⋯ em cada item para abrir, baixar, renomear, copiar o link ou "
+"excluir."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:234
 msgid "Tick the checkboxes to run bulk actions."
-msgstr ""
+msgstr "Marque as caixas de seleção para executar ações em massa."
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:247
 msgid "Create New Folder"
-msgstr ""
+msgstr "Criar nova pasta"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:286
 msgid "Destination folder"
-msgstr ""
+msgstr "Pasta de destino"
 
 #: admin/partials/linknacional-filebrowser-admin-display.php:290
 msgid "Move"
-msgstr ""
+msgstr "Mover"
 
 #: public/LinkNacionalFilebrowserPublic.php:189
 msgid "This link is invalid or has expired."
-msgstr ""
+msgstr "Este link é inválido ou expirou."
 
 #: public/LinkNacionalFilebrowserPublic.php:261
 msgid "Searching…"
-msgstr ""
+msgstr "Pesquisando…"
 
 #: public/LinkNacionalFilebrowserPublic.php:263
 msgid "Error performing search"
-msgstr ""
+msgstr "Erro ao realizar a pesquisa"
 
 #: public/LinkNacionalFilebrowserPublic.php:264
 msgid "Error loading folders"
-msgstr ""
+msgstr "Erro ao carregar pastas"
 
 #: public/LinkNacionalFilebrowserPublic.php:266
 msgid "No files or folders found in this location."
-msgstr ""
+msgstr "Nenhum arquivo ou pasta encontrado neste local."
 
 #: public/LinkNacionalFilebrowserPublic.php:267
 msgid "No results found"
-msgstr ""
+msgstr "Nenhum resultado encontrado"
 
 #: public/LinkNacionalFilebrowserPublic.php:268
 msgid "Try adjusting your search terms."
-msgstr ""
+msgstr "Tente ajustar seus termos de pesquisa."
 
 #: public/LinkNacionalFilebrowserPublic.php:269
 msgid "Results for"
-msgstr ""
+msgstr "Resultados para"
 
 #: public/LinkNacionalFilebrowserPublic.php:270
 msgid "Found"
-msgstr ""
+msgstr "Encontrados"
 
 #: public/LinkNacionalFilebrowserPublic.php:374
 msgid "Loading folders…"
-msgstr ""
+msgstr "Carregando pastas…"
 
 #: public/LinkNacionalFilebrowserPublic.php:389
 msgid "Search files and folders…"
-msgstr ""
+msgstr "Pesquisar arquivos e pastas…"
 
 #: public/LinkNacionalFilebrowserPublic.php:390
 msgid "Clear search"
-msgstr ""
+msgstr "Limpar pesquisa"
 
 #: public/LinkNacionalFilebrowserPublic.php:559
 msgid "Search term is required"
-msgstr ""
+msgstr "O termo de pesquisa é obrigatório"
