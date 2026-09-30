@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensions'] : '';
+$linknacional_filebrowser_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensions'] : '';
 ?>
 <div class="wrap lkn-fb-admin">
 
@@ -242,7 +242,7 @@ $lkn_extensions = isset( $data['allowed_extensions'] ) ? $data['allowed_extensio
 		</div>
 	</section>
 
-	<input type="file" id="lkn-fb-file-input" multiple accept="<?php echo esc_attr( $lkn_extensions ); ?>" hidden>
+	<input type="file" id="lkn-fb-file-input" multiple accept="<?php echo esc_attr( $linknacional_filebrowser_extensions ); ?>" hidden>
 </div>
 
 <!-- ===================== CREATE FOLDER MODAL ===================== -->

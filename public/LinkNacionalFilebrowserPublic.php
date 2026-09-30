@@ -137,6 +137,7 @@ class LinkNacionalFilebrowserPublic {
 		header( 'Content-Length: ' . filesize( $path ) );
 		header( 'Content-Disposition: ' . $disposition . '; filename="' . rawurlencode( $name ) . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming the file to the browser; WP_Filesystem would load it fully into memory.
 		readfile( $path );
 		exit;
 	}
@@ -183,8 +184,9 @@ class LinkNacionalFilebrowserPublic {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- The token is validated right below via validate_share_token().
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( LinkNacionalFilebrowserFiles::validate_share_token( $token ) !== $file_id ) {
 			wp_die( esc_html__( 'This link is invalid or has expired.', 'linknacional-file-browser' ), '', array( 'response' => 403 ) );
 		}
@@ -324,6 +326,7 @@ class LinkNacionalFilebrowserPublic {
 		$atts = shortcode_atts( array(
 			'folder_id' => 0,
 			'root' => '',
+			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Shortcode attribute name, not a WP_Query/get_posts() parameter.
 			'exclude' => '',
 			'show_search' => 'true',
 			'show_breadcrumb' => 'true',
@@ -438,7 +441,7 @@ class LinkNacionalFilebrowserPublic {
 	public function get_all_folders_frontend() {
 		check_ajax_referer( 'linknacional_filebrowser_public_nonce', 'nonce' );
 		$root_id     = isset( $_POST['root_id'] ) ? intval( wp_unslash( $_POST['root_id'] ) ) : 0;
-		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? wp_unslash( $_POST['exclude_ids'] ) : '' );
+		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? map_deep( wp_unslash( $_POST['exclude_ids'] ), 'sanitize_text_field' ) : '' );
 		global $wpdb;
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$folders = $wpdb->get_results("SELECT * FROM {$this->table_folders()} WHERE is_trashed = 0 ORDER BY parent_id ASC, name ASC");
@@ -457,7 +460,7 @@ class LinkNacionalFilebrowserPublic {
 		check_ajax_referer( 'linknacional_filebrowser_public_nonce', 'nonce' );
 		$collection = isset( $_POST['collection'] ) ? sanitize_key( wp_unslash( $_POST['collection'] ) ) : '';
 		$root_id    = isset( $_POST['root_id'] ) ? intval( wp_unslash( $_POST['root_id'] ) ) : 0;
-		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? wp_unslash( $_POST['exclude_ids'] ) : '' );
+		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? map_deep( wp_unslash( $_POST['exclude_ids'] ), 'sanitize_text_field' ) : '' );
 		global $wpdb;
 		$folders = array();
 		$files   = array();
@@ -526,8 +529,9 @@ class LinkNacionalFilebrowserPublic {
 		while ( ! empty( $frontier ) && $guard < 10000 ) {
 			$next = array();
 			foreach ( $frontier as $pid ) {
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is built from $wpdb->prefix; not user input.
 				$children = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE parent_id = %d AND is_trashed = 0", $pid ) );
+				// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				foreach ( $children as $cid ) {
 					$cid = (int) $cid;
 					if ( ! in_array( $cid, $ids, true ) ) {
@@ -554,7 +558,7 @@ class LinkNacionalFilebrowserPublic {
 		$search_term = isset( $_POST['search_term'] ) ? sanitize_text_field( wp_unslash( $_POST['search_term'] ) ) : '';
 		$folder_id = isset( $_POST['folder_id'] ) ? intval( wp_unslash( $_POST['folder_id'] ) ) : 0;
 		$root_id   = isset( $_POST['root_id'] ) ? intval( wp_unslash( $_POST['root_id'] ) ) : 0;
-		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? wp_unslash( $_POST['exclude_ids'] ) : '' );
+		$exclude_ids = $this->parse_id_list( isset( $_POST['exclude_ids'] ) ? map_deep( wp_unslash( $_POST['exclude_ids'] ), 'sanitize_text_field' ) : '' );
 		if ( empty( $search_term ) ) {
 			wp_send_json_error( __( 'Search term is required', 'linknacional-file-browser' ) );
 		}
@@ -596,8 +600,9 @@ class LinkNacionalFilebrowserPublic {
 		}
 		global $wpdb;
 		if ( ctype_digit( $root ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is built from $wpdb->prefix; not user input.
 			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table_folders()} WHERE id = %d AND is_trashed = 0", (int) $root ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			return $exists ? (int) $root : 0;
 		}
 		$parent = 0;
@@ -607,8 +612,9 @@ class LinkNacionalFilebrowserPublic {
 				continue;
 			}
 			$found = 0;
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is built from $wpdb->prefix; not user input.
 			$children = $wpdb->get_results( $wpdb->prepare( "SELECT id, name FROM {$this->table_folders()} WHERE parent_id = %d AND is_trashed = 0", $parent ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			foreach ( $children as $child ) {
 				if ( $this->str_lower( $child->name ) === $segment ) {
 					$found = (int) $child->id;
@@ -644,8 +650,9 @@ class LinkNacionalFilebrowserPublic {
 			return array();
 		}
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is built from $wpdb->prefix; not user input.
 		$rows = $wpdb->get_results( "SELECT id, name FROM {$this->table_folders()} WHERE is_trashed = 0" );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$scope = $root_id > 0 ? $this->folder_subtree_ids( $root_id ) : null;
 		$ids = array();
 		foreach ( $rows as $row ) {
@@ -711,7 +718,8 @@ class LinkNacionalFilebrowserPublic {
 			return $folders;
 		}
 		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name built from $wpdb->prefix; not user input.
+		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Placeholders are built dynamically ($placeholders).
 		$sub_counts  = $wpdb->get_results( $wpdb->prepare(
 			"SELECT parent_id AS fid, COUNT(*) AS total FROM {$this->table_folders()} WHERE parent_id IN ($placeholders) AND is_trashed = 0 GROUP BY parent_id",
 			$ids
@@ -720,6 +728,7 @@ class LinkNacionalFilebrowserPublic {
 			"SELECT folder_id AS fid, COUNT(*) AS total FROM {$this->table_files()} WHERE folder_id IN ($placeholders) AND is_trashed = 0 GROUP BY folder_id",
 			$ids
 		) );
+		// phpcs:enable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$totals = array();
 		foreach ( $sub_counts as $row ) {
@@ -813,7 +822,7 @@ class LinkNacionalFilebrowserPublic {
 	public function share_files_frontend() {
 		check_ajax_referer( 'linknacional_filebrowser_public_nonce', 'nonce' );
 
-		$raw = isset( $_POST['file_ids'] ) ? wp_unslash( $_POST['file_ids'] ) : '';
+		$raw = isset( $_POST['file_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['file_ids'] ) ) : '';
 		$ids = array();
 		foreach ( explode( ',', (string) $raw ) as $part ) {
 			$part = intval( $part );
@@ -828,11 +837,13 @@ class LinkNacionalFilebrowserPublic {
 
 		global $wpdb;
 		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name built from $wpdb->prefix; not user input.
+		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Placeholders are built dynamically ($placeholders).
 		$rows = $wpdb->get_results( $wpdb->prepare(
 			"SELECT id FROM {$this->table_files()} WHERE id IN ($placeholders) AND is_trashed = 0",
 			$ids
 		) );
+		// phpcs:enable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$links = array();

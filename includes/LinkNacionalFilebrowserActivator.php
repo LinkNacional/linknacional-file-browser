@@ -131,6 +131,7 @@ class LinkNacionalFilebrowserActivator {
 	 */
 	private static function resolve_storage_dir() {
 		$preferred = untrailingslashit( LinkNacionalFilebrowserFiles::default_storage_dir() );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Native check during activation; WP_Filesystem may require FTP credentials.
 		if ( ( \is_dir( $preferred ) || wp_mkdir_p( $preferred ) ) && is_writable( $preferred ) ) {
 			return $preferred;
 		}
@@ -153,8 +154,8 @@ class LinkNacionalFilebrowserActivator {
 		$uploads = wp_upload_dir();
 		$legacy  = untrailingslashit( $uploads['basedir'] . '/linknacional-filebrowser' );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$rows = $wpdb->get_results( "SELECT id, name, file_path FROM {$table}" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$rows = $wpdb->get_results( 'SELECT id, name, file_path FROM ' . esc_sql( $table ) );
 		if ( ! is_array( $rows ) ) {
 			return true;
 		}
@@ -184,6 +185,7 @@ class LinkNacionalFilebrowserActivator {
 			$target = $dir . '/' . $target_name;
 
 			if ( wp_normalize_path( $current ) !== wp_normalize_path( $target ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Moving a local file during migration; WP_Filesystem::move() may require FTP credentials.
 				if ( ! @rename( $current, $target ) ) {
 					// A real file exists but could not be moved: retry later.
 					$complete = false;
@@ -213,6 +215,7 @@ class LinkNacionalFilebrowserActivator {
 	 * @param string $dir Absolute directory.
 	 */
 	private static function protect_upload_dir( $dir ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Native check during activation; WP_Filesystem may require FTP credentials.
 		if ( ! is_dir( $dir ) || ! is_writable( $dir ) ) {
 			return;
 		}
@@ -230,6 +233,7 @@ class LinkNacionalFilebrowserActivator {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			@file_put_contents( $htaccess, $rules );
 		} else {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local file; wp_remote_get() is only for remote URLs.
 			$existing = (string) \file_get_contents( $htaccess );
 			if ( false === strpos( $existing, 'Link Nacional File Browser' ) ) {
 				// Preserve existing rules; just append our block.

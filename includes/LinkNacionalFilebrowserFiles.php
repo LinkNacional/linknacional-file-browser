@@ -215,9 +215,8 @@ class LinkNacionalFilebrowserFiles {
 		}
 		global $wpdb;
 		$hash = hash( 'sha256', $raw );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$row = $wpdb->get_row( $wpdb->prepare(
-			'SELECT file_id, expires_at FROM ' . self::tokens_table() . ' WHERE token_hash = %s AND revoked = 0 LIMIT 1',
+			'SELECT file_id, expires_at FROM ' . esc_sql( self::tokens_table() ) . ' WHERE token_hash = %s AND revoked = 0 LIMIT 1',
 			$hash
 		) );
 		if ( ! $row ) {
@@ -237,8 +236,7 @@ class LinkNacionalFilebrowserFiles {
 	public static function purge_expired_tokens() {
 		global $wpdb;
 		$now = gmdate( 'Y-m-d H:i:s' );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . self::tokens_table() . ' WHERE expires_at < %s OR revoked = 1', $now ) );
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . esc_sql( self::tokens_table() ) . ' WHERE expires_at < %s OR revoked = 1', $now ) );
 	}
 
 	/**
@@ -399,7 +397,7 @@ class LinkNacionalFilebrowserFiles {
 		$candidates[] = '/tmp';
 		foreach ( $candidates as $candidate ) {
 			$candidate = untrailingslashit( (string) $candidate );
-			if ( '' !== $candidate && false === strpos( $candidate, ' ' ) && ( \is_dir( $candidate ) || wp_mkdir_p( $candidate ) ) && is_writable( $candidate ) ) {
+			if ( '' !== $candidate && false === strpos( $candidate, ' ' ) && ( \is_dir( $candidate ) || wp_mkdir_p( $candidate ) ) && wp_is_writable( $candidate ) ) {
 				return $candidate;
 			}
 		}
@@ -433,6 +431,7 @@ class LinkNacionalFilebrowserFiles {
 
 		// Serialise conversions of the same file: concurrent viewers wait for the
 		// first run instead of each spawning their own headless LibreOffice.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Lock file to serialise concurrent conversions; WP_Filesystem has no flock() equivalent.
 		$lock = @fopen( $cache . '/' . $key . '.lock', 'c' );
 		if ( ! $lock ) {
 			return null;
@@ -447,6 +446,7 @@ class LinkNacionalFilebrowserFiles {
 			$work = self::work_dir();
 			$tmp  = '' !== $work ? $work . '/lnfb-' . wp_generate_password( 12, false, false ) : '';
 			if ( '' !== $tmp && wp_mkdir_p( $tmp ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Restrict the local temp dir; WP_Filesystem::chmod() needs a bootstrap that may require FTP credentials.
 				@chmod( $tmp, 0700 );
 				$profile = $tmp . '/profile';
 				$home    = $tmp . '/home';
@@ -485,6 +485,7 @@ class LinkNacionalFilebrowserFiles {
 				@exec( $cmd . ' 2>&1', $output, $code );
 
 				$produced = $tmp . '/' . pathinfo( $path, PATHINFO_FILENAME ) . '.pdf';
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Move within the local temp/cache filesystem; WP_Filesystem::move() needs a bootstrap.
 				if ( \file_exists( $produced ) && @rename( $produced, $out ) ) {
 					$result = $out;
 				}
@@ -493,6 +494,7 @@ class LinkNacionalFilebrowserFiles {
 		}
 
 		@flock( $lock, LOCK_UN );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closes the lock file opened above.
 		@fclose( $lock );
 		return $result;
 	}
@@ -547,8 +549,7 @@ class LinkNacionalFilebrowserFiles {
 		}
 		$live  = array();
 		$table = $wpdb->prefix . 'linknacional_filebrowser_files';
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$paths = $wpdb->get_col( "SELECT file_path FROM {$table}" );
+		$paths = $wpdb->get_col( 'SELECT file_path FROM ' . esc_sql( $table ) );
 		foreach ( (array) $paths as $path ) {
 			if ( $path && \file_exists( $path ) ) {
 				$live[ self::preview_key( $path ) ] = true;
@@ -612,10 +613,11 @@ class LinkNacionalFilebrowserFiles {
 				if ( \is_dir( $full ) ) {
 					self::rrmdir( $full );
 				} else {
-					@unlink( $full );
+					wp_delete_file( $full );
 				}
 			}
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Remove the local temp dir; it may live outside the WP tree, so WP_Filesystem does not apply.
 		@rmdir( $dir );
 	}
 }
