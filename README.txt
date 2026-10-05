@@ -12,29 +12,36 @@ A complete file browser plugin with hierarchical folder system and search interf
 
 == Description ==
 
-Link Nacional File Browser lets you create and manage a complete hierarchical file system within WordPress. It provides an admin interface to organize files into folders and a shortcode to display the file browser on the frontend.
+Link Nacional File Browser lets you create and manage a complete hierarchical file system within [WordPress](https://www.linknacional.com.br/wordpress/). It provides an admin interface to organize files into folders and a shortcode to display the file browser on the frontend.
 
 **Key Features:**
 
 * **Hierarchical Folder System** — Create nested folders organized like a file explorer
-* **Multiple File Uploads** — Support for PDF, Word, Excel, PowerPoint, images, and more
+* **Multiple File Uploads** — Drag & drop a multi-file queue with per-file progress; PDF, Word, Excel, PowerPoint, OpenDocument and images supported
 * **Search Interface** — Quick file and folder search on the frontend
 * **Collections** — Favorites, Recent, and Trash to organize what matters
 * **Copy & Move** — Duplicate or relocate files and whole folder trees
 * **Bulk Actions** — Select several items to act on them at once
-* **Shortcode Scoping** — Start from a folder and hide the ones you don't need
+* **Shortcode Scoping** — New `root` and `exclude` attributes to start from a folder and hide the ones you don't need
+* **Fullscreen Viewer** — Open PDF, Office and image files in a popup with crisp zoom (PDF.js), page navigation and pan
+* **Office Previews** — Word, Excel and PowerPoint files converted to PDF server-side so they can be viewed without being downloaded
+* **Temporary Share Links** — Generate a per-file share link valid for 1 hour, usable outside the session and by AI tools
+* **Per-File Download Restriction** — Keep a file viewable while blocking its download
+* **Copy for AI** — Export a markdown document with the share links of the selected files
+* **Protected Images** — Restricted images rendered on a canvas, with right-click and drag disabled
+* **Detail Drawer & Toolbar** — Inspect file details and act from a refreshed admin and frontend workspace
 * **Responsive Design** — Grid or list layout, adaptable to mobile devices
 * **Breadcrumb Navigation** — Intuitive folder browsing
 * **Flexible Shortcode** — Multiple configuration options
 
 **Supported File Types:**
-* Documents: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT
+* Documents: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ODT, ODS, ODP, RTF, TXT
 * Images: JPG, JPEG, PNG, GIF, WEBP
 
 == Installation ==
 
 1. Upload the plugin to the `/wp-content/plugins/linknacional-file-browser/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
+2. Activate the plugin through the 'Plugins' menu in [WordPress](https://www.linknacional.com.br/wordpress/)
 3. The plugin will automatically create the required database tables
 4. Go to 'File Browser' in the admin menu to start organizing your files
 
@@ -51,6 +58,9 @@ Go to 'File Browser' in the admin menu for complete usage instructions.
 
 **Specific folder:**
 `[linkn_filebrowser folder_id="1"]`
+
+**Start from a folder and hide other folders:**
+`[linkn_filebrowser root="Reports" exclude="Drafts,Archive"]`
 
 **Different layout:**
 `[linkn_filebrowser layout="list"]`
@@ -158,4 +168,4 @@ This plugin is licensed under GPL v2 or later.
 == Upgrade Notice ==
 
 = 1.0.0 - 2026-07-27 =
-* Documentation update and WordPress coding standards compliance. No breaking changes.
+* Documentation update and [WordPress](https://www.linknacional.com.br/wordpress/) coding standards compliance. No breaking changes.
