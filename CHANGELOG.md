@@ -1,3 +1,12 @@
+# 1.1.1 - 05/10/2026
+* Uploads: suporte a upload de ODT, ODS, ODP e RTF.
+* Copy link passa a gerar o link do visualizador e limpa automaticamente os tokens expirados.
+* Botão "Copiar para IA" na barra do frontend e no admin, padronizando a ação entre as interfaces.
+* Sanitização de entradas e correção de avisos do Plugin Check.
+* Comentários de tradutor nas strings com placeholder e traduções pt_BR atualizadas.
+* Limpeza de previews órfãos ao apagar arquivos e no cron diário.
+* Screenshots e documentação atualizadas.
+
 # 1.1.0 - 24/09/26
 * Redesign completo das interfaces (admin e frontend): coleções na sidebar, barra de ferramentas, painel de detalhes (drawer), toasts e visual renovado.
 * Favoritos: marque arquivos e pastas como favoritos e navegue por eles em uma coleção dedicada (admin e frontend).

@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: linknacional-file-browser
   PHP_VERSION: "8.2"
-  PLUGIN_VERSION: '1.1.0'
+  PLUGIN_VERSION: '1.1.1'
 
 jobs:
   release-build:
