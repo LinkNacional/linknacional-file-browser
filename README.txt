@@ -3,7 +3,7 @@ Contributors: linknacional
 Tags: file manager, documents, upload, folders, download
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -107,6 +107,15 @@ Yes! The plugin is built with responsive design and automatically adapts to tabl
 
 == Changelog ==
 
+= 1.1.1 - 2026-10-05 =
+* Uploads: added support for ODT, ODS, ODP and RTF documents.
+* Copy link now generates the viewer link and automatically cleans up expired tokens.
+* Copy for AI button on the frontend toolbar and the admin, standardizing the action across interfaces.
+* Sanitized inputs and fixed Plugin Check warnings.
+* Added translator comments to strings with placeholders and refreshed the pt_BR translations.
+* Cleanup of orphaned previews when deleting files and in the daily cron.
+* Updated screenshots and documentation.
+
 = 1.1.0 - 2026-09-24 =
 * Redesigned admin and frontend interfaces: sidebar collections, workspace toolbar, detail drawer, toasts, and a fully refreshed look.
 * Favorites: mark files and folders as favorites and browse them in a dedicated collection (admin and frontend).
@@ -166,6 +175,9 @@ For technical support, contact us:
 This plugin is licensed under GPL v2 or later.
 
 == Upgrade Notice ==
+
+= 1.1.1 - 2026-10-05 =
+ODT/ODS/ODP/RTF uploads, viewer share links with automatic token cleanup, a Copy for AI button, and Plugin Check fixes.
 
 = 1.0.0 - 2026-07-27 =
 * Documentation update and [WordPress](https://www.linknacional.com.br/wordpress/) coding standards compliance. No breaking changes.
